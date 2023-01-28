@@ -2,32 +2,16 @@
 
 namespace MinimalQueues.AwsSqs;
 
-public class Countdown
+public struct Countdown
 {
-    private TimeSpan _duration;
-    private Stopwatch _stopwatch = new Stopwatch();
+    private readonly double _duration;
+    private long _start;
 
-    public static Countdown StartNew(TimeSpan waitTime)
+    public Countdown(TimeSpan duration)
     {
-        var countDown = new Countdown();
-        countDown.Start(waitTime);
-        return countDown;
+        _duration = duration.TotalSeconds * Stopwatch.Frequency;
+        _start = 0;
     }
-    public void Start(TimeSpan duration)
-    {
-        _duration = duration;
-        _stopwatch.Restart();
-    }
-
-    public TimeSpan RemainingTime
-    {
-        get
-        {
-            var elapsed = _stopwatch.Elapsed;
-            return _duration > elapsed ? _duration - elapsed
-                : TimeSpan.Zero;
-        }
-    }
-
-    public bool TimedOut => _stopwatch.Elapsed >= _duration;
+    public void Start() => _start = Stopwatch.GetTimestamp();
+    public bool TimedOut => (Stopwatch.GetTimestamp() - _start) >= _duration;
 }

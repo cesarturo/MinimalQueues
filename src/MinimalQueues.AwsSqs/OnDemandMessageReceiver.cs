@@ -33,7 +33,8 @@ internal sealed class OnDemandMessageReceiver : IMessageReceiver
         var messageContext = new MessageContext(_connection);
         try
         {
-            var countdown = Countdown.StartNew(_visibilityTimeout);
+            var countdown = new Countdown(_visibilityTimeout);
+            countdown.Start();
             Message? message = await ReceiveOneMessage(cancellation);
             if (message is null)
             {

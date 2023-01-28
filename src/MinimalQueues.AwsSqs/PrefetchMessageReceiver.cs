@@ -99,7 +99,8 @@ internal class PrefetchMessageReceiver : IMessageReceiver
         while (true)
         {
             _receiveMessageRequest.MaxNumberOfMessages = countForRequest;
-            var countdown = Countdown.StartNew(TimeSpan.FromSeconds(_connection.VisibilityTimeout));
+            var countdown = new Countdown(TimeSpan.FromSeconds(_connection.VisibilityTimeout));
+            countdown.Start();
             var response = await _sqsClient.ReceiveMessageAsync(_receiveMessageRequest, _connectionCancellation);
             if (countdown.TimedOut)
             {
