@@ -1,6 +1,6 @@
 ﻿namespace MinimalQueues.AwsSqs;
 
-internal interface IMessageReceiver
+internal interface IMessageReceiver: IDisposable
 {
-    Task<IMessageContext?> ReceiveMessage(CancellationToken cancellation);
+    Task<SqsMessage?> ReceiveMessage(CancellationToken cancellation);
 }

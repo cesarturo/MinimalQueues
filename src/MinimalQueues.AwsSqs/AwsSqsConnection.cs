@@ -1,5 +1,4 @@
-﻿using System.Threading.Channels;
-using Amazon;
+﻿using Amazon;
 using Amazon.Runtime;
 using Amazon.SQS;
 using Amazon.SQS.Model;
@@ -26,6 +25,7 @@ internal sealed class AwsSqsConnection : IQueueConnection, IAwsSqsConnectionConf
     internal AmazonSQSClient _sqsClient;
     private CancellationTokenSource _cancellation;
     internal CancellationToken Cancellation => _cancellation.Token;
+    private IMessageReceiver _messageReceiver;
 
 #pragma warning restore CS8618
     public Task Start(Func<IMessage, CancellationToken, Task> processMessageDelegate, CancellationToken cancellationToken)
@@ -35,9 +35,9 @@ internal sealed class AwsSqsConnection : IQueueConnection, IAwsSqsConnectionConf
         _processMessageAsync = processMessageDelegate;
         _sqsClient = GetClient();
         _cancellation = new CancellationTokenSource();
-        IMessageReceiver messageReceiver = PrefetchCount is 0 ? new OnDemandMessageReceiver(this)
-                                                              : new PrefetchMessageReceiver(this);
-        var workerTasks = Enumerable.Range(1, MaxConcurrentCalls).Select(i => new Worker(this, messageReceiver).Start()).ToArray();
+        _messageReceiver = PrefetchCount is 0 ? new OnDemandMessageReceiver(this)
+                                              : new PrefetchMessageReceiver(this);
+        var workerTasks = Enumerable.Range(1, MaxConcurrentCalls).Select(i => new Worker(this, _messageReceiver).Start()).ToArray();
         return Task.CompletedTask;
     }
 
@@ -67,16 +67,16 @@ internal sealed class AwsSqsConnection : IQueueConnection, IAwsSqsConnectionConf
         return new AmazonSQSClient();
     }
 
-    internal async Task ProcessMessageAsync(Message message)
+    internal async Task ProcessMessageAsync(SqsMessage message)
     {
-        await _processMessageAsync(new SqsMessage(message), Cancellation);
+        await _processMessageAsync(message, Cancellation);
     }
-    internal async Task DeleteMessage(Message message)
+    internal async Task DeleteMessage(SqsMessage message)
     {
         await _sqsClient.DeleteMessageAsync(new DeleteMessageRequest
         {
             QueueUrl = QueueUrl,
-            ReceiptHandle = message.ReceiptHandle
+            ReceiptHandle = message.InnerMessage.ReceiptHandle
         });
     }
 
@@ -90,6 +90,7 @@ internal sealed class AwsSqsConnection : IQueueConnection, IAwsSqsConnectionConf
     {
         _cancellation?.Cancel();
         _sqsClient?.Dispose();
+        _messageReceiver.Dispose();
     }
 }
 

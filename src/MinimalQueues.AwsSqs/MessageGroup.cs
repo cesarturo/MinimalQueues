@@ -1,5 +1,4 @@
 ﻿using Amazon.SQS.Model;
-
 namespace MinimalQueues.AwsSqs;
 
 internal class MessageGroup: IAsyncDisposable
@@ -15,12 +14,13 @@ internal class MessageGroup: IAsyncDisposable
         _timer = new PeriodicTimer(TimeSpan.FromSeconds(_connection.RenewVisibilityWaitTime));
         _updateVisibilityTask = UpdateVisibility();
     }
-    public IEnumerable<MessageContext> Initialize(List<Message> messages)
+    public IEnumerable<PrefetchedSqsMessage> Initialize(List<Message>? messages)
     {
+        if (messages is null) yield break;
         _messages = messages.ToHashSet();
         for (int i = 0; i < messages.Count; i++)
         {
-            yield return new MessageContext(this, messages[i]);
+            yield return new PrefetchedSqsMessage(this, messages[i]);
         }
     }
     private async Task UpdateVisibility()
@@ -65,20 +65,22 @@ internal class MessageGroup: IAsyncDisposable
         return new ValueTask(_updateVisibilityTask);
     }
 
-    internal class MessageContext : IMessageContext
+    internal class PrefetchedSqsMessage : SqsMessage
     {
-        private readonly MessageGroup _context;
-        public Message? Message { get; }
+        private readonly MessageGroup _messageGroup;
 
-        public MessageContext(MessageGroup context, Message message)
+        public PrefetchedSqsMessage(MessageGroup messageGroup, Message innerMessage)
+            :base(innerMessage)
         {
-            _context = context;
-            Message = message;
+            _messageGroup = messageGroup;
         }
-
-        public ValueTask DisposeAsync()
+        public override BinaryData GetBody()
         {
-            return _context.Remove(Message);
+            return new BinaryData(InnerMessage.Body);
+        }
+        public override ValueTask DisposeAsync()
+        {
+            return _messageGroup.Remove(InnerMessage);
         }
     }
 }

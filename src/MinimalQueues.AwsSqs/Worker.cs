@@ -19,12 +19,11 @@ namespace MinimalQueues.AwsSqs
             {
                 try
                 {
-                    await using var messageContext = await _messageReceiver.ReceiveMessage(_connection.Cancellation);
-                    if (messageContext is null) continue;
-                    var message = messageContext.Message!;
-                    using var activity = TryStartActivity(message);
-                    await _connection.ProcessMessageAsync(messageContext.Message);
-                    await _connection.DeleteMessage(messageContext.Message);
+                    await using var message = await _messageReceiver.ReceiveMessage(_connection.Cancellation);
+                    if (message is null) continue;
+                    using var activity = TryStartActivity(message.InnerMessage);
+                    await _connection.ProcessMessageAsync(message);
+                    await _connection.DeleteMessage(message);
                     activity?.Stop();
                 }
                 catch (Exception exception)

@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <PackageReference Include="AWSSDK.SQS" Version="3.7.100.23" />
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="7.0.2" />
     <PackageReference Include="MinimalQueues" Version="1.0.0-rc1" />
     <PackageReference Include="System.Memory.Data" Version="7.0.0" />
   </ItemGroup>

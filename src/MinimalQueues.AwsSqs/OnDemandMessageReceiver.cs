@@ -1,14 +1,16 @@
 ﻿using Amazon.SQS;
 using Amazon.SQS.Model;
+using System.Buffers;
 
 namespace MinimalQueues.AwsSqs;
 
 internal sealed class OnDemandMessageReceiver : IMessageReceiver
 {
-    private readonly TimeSpan _visibilityTimeout;
-    private readonly AmazonSQSClient _sqsClient;
+    private readonly TimeSpan         _visibilityTimeout;
+    private readonly AmazonSQSClient  _sqsClient;
     private readonly AwsSqsConnection _connection;
-    private readonly BackoffManager _backoffManager;
+    private readonly BackoffManager   _backoffManager;
+
     public OnDemandMessageReceiver(AwsSqsConnection connection)
     {
         _connection        = connection;
@@ -27,10 +29,10 @@ internal sealed class OnDemandMessageReceiver : IMessageReceiver
     }
     private ReceiveMessageRequest _receiveMessageRequest;
     
-    public async Task<IMessageContext?> ReceiveMessage(CancellationToken cancellation)
+    public async Task<SqsMessage?> ReceiveMessage(CancellationToken cancellation)
     {
         await _backoffManager.Wait();
-        var messageContext = new MessageContext(_connection);
+        var renewTimer = new PeriodicTimer(TimeSpan.FromSeconds(_connection.RenewVisibilityWaitTime));
         try
         {
             var countdown = new Countdown(_visibilityTimeout);
@@ -39,7 +41,7 @@ internal sealed class OnDemandMessageReceiver : IMessageReceiver
             if (message is null)
             {
                 _backoffManager.Start();
-                await messageContext.DisposeAsync();
+                renewTimer.Dispose();
                 return null;
             }
             _backoffManager.Release();
@@ -47,21 +49,19 @@ internal sealed class OnDemandMessageReceiver : IMessageReceiver
             {
                 throw new Exception($"{nameof(_sqsClient.ReceiveMessageAsync)} took longer than {nameof(AwsSqsConnection.VisibilityTimeout)}. Message lock may be expired. Message will not be processed.");
             }
-            messageContext.Initialize(message);
-            return messageContext;
+            return new OnDemandSqsMessage(message, _connection, renewTimer);
         }
         catch (TaskCanceledException)
         {
-            await messageContext.DisposeAsync();
+            renewTimer.Dispose();
             return null;
         }
         catch
         {
-            await messageContext.DisposeAsync();
+            renewTimer.Dispose();
             throw;
         }
     }
-
     private async Task<Message?> ReceiveOneMessage(CancellationToken cancellation)
     {
         try
@@ -75,5 +75,10 @@ internal sealed class OnDemandMessageReceiver : IMessageReceiver
             _backoffManager.Start();
             throw;
         }
+    }
+
+    public void Dispose()
+    {
+        
     }
 }

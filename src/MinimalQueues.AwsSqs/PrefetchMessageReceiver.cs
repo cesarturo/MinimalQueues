@@ -8,8 +8,8 @@ internal class PrefetchMessageReceiver : IMessageReceiver
 {
     private readonly AwsSqsConnection _connection;
     private readonly AmazonSQSClient _sqsClient;
-    private readonly ChannelReader<MessageGroup.MessageContext> _channelReader;
-    private readonly ChannelWriter<MessageGroup.MessageContext> _channelWriter;
+    private readonly ChannelReader<SqsMessage> _channelReader;
+    private readonly ChannelWriter<SqsMessage> _channelWriter;
     private readonly AutoResetEvent _autoResetEvent = new AutoResetEvent(true);
     private readonly ReceiveMessageRequest _receiveMessageRequest;
     private int _backoffCount;
@@ -28,7 +28,7 @@ internal class PrefetchMessageReceiver : IMessageReceiver
             MessageAttributeNames = allAttributes,
             VisibilityTimeout = _connection.VisibilityTimeout
         };
-        var channel = Channel.CreateBounded<MessageGroup.MessageContext>(new BoundedChannelOptions(_connection.PrefetchCount)
+        var channel = Channel.CreateBounded<SqsMessage>(new BoundedChannelOptions(_connection.PrefetchCount)
         {
             FullMode = BoundedChannelFullMode.Wait,
             SingleWriter = true,
@@ -41,17 +41,24 @@ internal class PrefetchMessageReceiver : IMessageReceiver
 
     private async Task Prefetch()
     {
-        int prefetchCount = _connection.PrefetchCount;
-        while (!_connectionCancellation.IsCancellationRequested)
+        try
         {
-            var countForRequest = await GetCountForRequestGreaterThanTheMinimum(prefetchCount);
-            if (_connectionCancellation.IsCancellationRequested) break;
-            var messageContexts = await WaitUntilAvailableAndGetMessageContexts(countForRequest, prefetchCount);
-            foreach (var messageContext in messageContexts)
+            int prefetchCount = _connection.PrefetchCount;
+            while (!_connectionCancellation.IsCancellationRequested)
             {
-                await _channelWriter.WriteAsync(messageContext);
+                var countForRequest = await GetCountForRequestGreaterThanTheMinimum(prefetchCount);
+                if (_connectionCancellation.IsCancellationRequested) break;
+                var messages = await WaitUntilAvailableAndGetMessageContexts(countForRequest, prefetchCount);
+                foreach (var message in messages)
+                {
+                    await _channelWriter.WriteAsync(message);
+                }
+                _backoffCount = 0;
             }
-            _backoffCount = 0;
+        }
+        catch (ChannelClosedException exception)
+        {
+            
         }
     }
     private async Task<int> GetCountForRequestGreaterThanTheMinimum(int prefetchCount)
@@ -69,13 +76,13 @@ internal class PrefetchMessageReceiver : IMessageReceiver
         }
         return -1;
     }
-    private async Task<IEnumerable<MessageGroup.MessageContext>> WaitUntilAvailableAndGetMessageContexts(int countForRequest, int prefetchCount)
+    private async Task<IEnumerable<MessageGroup.PrefetchedSqsMessage>> WaitUntilAvailableAndGetMessageContexts(int countForRequest, int prefetchCount)
     {
         while (true)
         {
             var messageGroup = new MessageGroup(_connection);
             var messages = await ReceiveMessages(countForRequest);
-            if (messages.Count is 0)
+            if (messages is null || messages.Count is 0)
             {
                 await messageGroup.DisposeAsync();
                 await BackoffWait();
@@ -94,27 +101,41 @@ internal class PrefetchMessageReceiver : IMessageReceiver
         await timer.WaitForNextTickAsync(_connectionCancellation);
     }
 
-    private async Task<List<Message>> ReceiveMessages(int countForRequest)
+    private async Task<List<Message>?> ReceiveMessages(int countForRequest)
     {
         while (true)
         {
-            _receiveMessageRequest.MaxNumberOfMessages = countForRequest;
-            var countdown = new Countdown(TimeSpan.FromSeconds(_connection.VisibilityTimeout));
-            countdown.Start();
-            var response = await _sqsClient.ReceiveMessageAsync(_receiveMessageRequest, _connectionCancellation);
-            if (countdown.TimedOut)
+            try
             {
-                var exception = new Exception($"{nameof(_sqsClient.ReceiveMessageAsync)} took longer than {nameof(AwsSqsConnection.VisibilityTimeout)}. Message locks may be expired. Messages will not be processed.");
-                _connection.OnError?.Invoke(exception);
+                _receiveMessageRequest.MaxNumberOfMessages = countForRequest;
+                var countdown = new Countdown(TimeSpan.FromSeconds(_connection.VisibilityTimeout));
+                countdown.Start();
+                var response = await _sqsClient.ReceiveMessageAsync(_receiveMessageRequest, _connectionCancellation);
+                if (countdown.TimedOut)
+                {
+                    var exception = new Exception($"{nameof(_sqsClient.ReceiveMessageAsync)} took longer than {nameof(AwsSqsConnection.VisibilityTimeout)}. Message locks may be expired. Messages will not be processed.");
+                    _connection.OnError?.Invoke(exception);
+                }
+                return response.Messages;
             }
-            return response.Messages; 
+            catch (Exception exception)
+            {
+                _connection.OnError?.Invoke(exception);
+                return null;
+            }
         }
     }
 
-    public async Task<IMessageContext?> ReceiveMessage(CancellationToken cancellation)
+    public async Task<SqsMessage?> ReceiveMessage(CancellationToken cancellation)
     {
         var messageContext = await _channelReader.ReadAsync();
         _autoResetEvent.Set();
         return messageContext;
+    }
+
+    public void Dispose()
+    {
+        _autoResetEvent.Dispose();
+        _channelWriter.Complete();
     }
 }
