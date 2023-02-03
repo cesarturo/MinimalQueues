@@ -67,22 +67,22 @@ internal sealed class AwsSqsConnection : IQueueConnection, IAwsSqsConnectionConf
         return new AmazonSQSClient();
     }
 
-    internal async Task ProcessMessageAsync(SqsMessage message)
+    internal Task ProcessMessageAsync(SqsMessage message)
     {
-        await _processMessageAsync(message, Cancellation);
+        return _processMessageAsync(message, Cancellation);
     }
-    internal async Task DeleteMessage(SqsMessage message)
+    internal Task DeleteMessage(SqsMessage message)
     {
-        await _sqsClient.DeleteMessageAsync(new DeleteMessageRequest
+        return _sqsClient.DeleteMessageAsync(new DeleteMessageRequest
         {
             QueueUrl = QueueUrl,
             ReceiptHandle = message.InnerMessage.ReceiptHandle
         });
     }
 
-    internal async Task UpdateVisibility(Message message)
+    internal Task UpdateVisibility(Message message)
     {
-        await _sqsClient.ChangeMessageVisibilityAsync(QueueUrl, message.ReceiptHandle, VisibilityTimeout);
+        return _sqsClient.ChangeMessageVisibilityAsync(QueueUrl, message.ReceiptHandle, VisibilityTimeout);
     }
 
 
