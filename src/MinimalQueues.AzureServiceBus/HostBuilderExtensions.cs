@@ -1,7 +1,8 @@
 ﻿using Azure.Core;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.Hosting;
-using MinimalQueues.Options;
+using MinimalQueues.Core;
+using MinimalQueues.Core.Options;
 
 namespace MinimalQueues.AzureServiceBus;
 

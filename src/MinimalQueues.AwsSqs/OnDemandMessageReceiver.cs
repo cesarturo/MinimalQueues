@@ -1,6 +1,5 @@
 ﻿using Amazon.SQS;
 using Amazon.SQS.Model;
-using System.Buffers;
 
 namespace MinimalQueues.AwsSqs;
 

@@ -1,7 +1,8 @@
 ﻿using Amazon.SQS.Model;
 using System.Diagnostics;
+using MinimalQueues.AwsSqs;
 
-namespace MinimalQueues.AwsSqs
+namespace MinimalQueues.Core.AwsSqs
 {
     internal sealed class Worker
     {

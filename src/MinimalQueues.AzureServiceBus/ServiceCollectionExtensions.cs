@@ -1,9 +1,10 @@
 ﻿using Azure.Core;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Extensions.DependencyInjection;
-using MinimalQueues.Options;
+using MinimalQueues.AzureServiceBus;
+using MinimalQueues.Core.Options;
 
-namespace MinimalQueues.AzureServiceBus;
+namespace MinimalQueues.Core.AzureServiceBus;
 
 public static class ServiceCollectionExtensions
 {

@@ -2,6 +2,8 @@
 using Amazon.Runtime;
 using Amazon.SQS;
 using Amazon.SQS.Model;
+using MinimalQueues.Core;
+using MinimalQueues.Core.AwsSqs;
 
 namespace MinimalQueues.AwsSqs;
 

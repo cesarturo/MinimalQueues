@@ -1,4 +1,5 @@
 ﻿using Azure.Messaging.ServiceBus;
+using MinimalQueues.Core;
 
 namespace MinimalQueues.AzureServiceBus
 {

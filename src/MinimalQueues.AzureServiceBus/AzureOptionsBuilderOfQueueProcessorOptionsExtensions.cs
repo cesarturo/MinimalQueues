@@ -1,7 +1,9 @@
 ﻿using Azure.Core;
 using Azure.Identity;
 using Azure.Messaging.ServiceBus;
-using MinimalQueues.Options;
+using MinimalQueues.Core;
+using MinimalQueues.Core.AzureServiceBus;
+using MinimalQueues.Core.Options;
 
 namespace MinimalQueues.AzureServiceBus;
 

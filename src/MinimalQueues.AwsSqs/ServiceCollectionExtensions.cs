@@ -2,7 +2,8 @@
 using Amazon.Runtime;
 using Amazon.SQS;
 using Microsoft.Extensions.DependencyInjection;
-using MinimalQueues.Options;
+using MinimalQueues.Core;
+using MinimalQueues.Core.Options;
 
 namespace MinimalQueues.AwsSqs;
 

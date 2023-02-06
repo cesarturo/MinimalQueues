@@ -1,4 +1,5 @@
 ﻿using Amazon.SQS.Model;
+using MinimalQueues.Core;
 
 namespace MinimalQueues.AwsSqs;
 
