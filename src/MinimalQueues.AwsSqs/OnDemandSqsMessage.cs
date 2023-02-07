@@ -8,8 +8,8 @@ internal sealed class OnDemandSqsMessage : SqsMessage
     private readonly PeriodicTimer    _timer;
     private readonly Task             _updateVisibilityTask;
 
-    public OnDemandSqsMessage(Message innerMessage, AwsSqsConnection connection, PeriodicTimer renewTimer)
-        :base(innerMessage)
+    public OnDemandSqsMessage(Message internalMessage, AwsSqsConnection connection, PeriodicTimer renewTimer)
+        :base(internalMessage)
     {
         _connection = connection;
         _timer = renewTimer;
@@ -21,11 +21,11 @@ internal sealed class OnDemandSqsMessage : SqsMessage
         while (await _timer.WaitForNextTickAsync())
         {
             await updatevisibilityTask;
-            if (InnerMessage is null) continue;
-            updatevisibilityTask = _connection.UpdateVisibility(InnerMessage);
+            if (InternalMessage is null) continue;
+            updatevisibilityTask = _connection.UpdateVisibility(InternalMessage);
         }
     }
-    public override BinaryData GetBody() => new BinaryData(InnerMessage.Body);
+    public override BinaryData GetBody() => new BinaryData(InternalMessage.Body);
 
 
     public override ValueTask DisposeAsync()

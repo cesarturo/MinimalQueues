@@ -3,10 +3,13 @@ using MinimalQueues.Core;
 
 namespace MinimalQueues.AzureServiceBus
 {
-    internal sealed class AzureMessage : IMessage
+    public sealed class AzureMessage : IMessage
     {
         private ServiceBusReceivedMessage _message;
         public AzureMessage(ServiceBusReceivedMessage message) => _message = message;
+
+        public ServiceBusReceivedMessage InternalMessage => _message;
+
         public BinaryData GetBody() => _message.Body;
         public object? GetProperty(string propertyName)
         {

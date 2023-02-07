@@ -78,7 +78,7 @@ internal sealed class AwsSqsConnection : IQueueConnection, IAwsSqsConnectionConf
         return _sqsClient.DeleteMessageAsync(new DeleteMessageRequest
         {
             QueueUrl = QueueUrl,
-            ReceiptHandle = message.InnerMessage.ReceiptHandle
+            ReceiptHandle = message.InternalMessage.ReceiptHandle
         });
     }
 

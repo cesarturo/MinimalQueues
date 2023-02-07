@@ -22,7 +22,7 @@ namespace MinimalQueues.Core.AwsSqs
                 {
                     await using var message = await _messageReceiver.ReceiveMessage(_connection.Cancellation);
                     if (message is null) continue;
-                    using var activity = TryStartActivity(message.InnerMessage);
+                    using var activity = TryStartActivity(message.InternalMessage);
                     await _connection.ProcessMessageAsync(message);
                     await _connection.DeleteMessage(message);
                     activity?.Stop();

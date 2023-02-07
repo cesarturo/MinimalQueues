@@ -69,18 +69,18 @@ internal class MessageGroup: IAsyncDisposable
     {
         private readonly MessageGroup _messageGroup;
 
-        public PrefetchedSqsMessage(MessageGroup messageGroup, Message innerMessage)
-            :base(innerMessage)
+        public PrefetchedSqsMessage(MessageGroup messageGroup, Message internalMessage)
+            :base(internalMessage)
         {
             _messageGroup = messageGroup;
         }
         public override BinaryData GetBody()
         {
-            return new BinaryData(InnerMessage.Body);
+            return new BinaryData(InternalMessage.Body);
         }
         public override ValueTask DisposeAsync()
         {
-            return _messageGroup.Remove(InnerMessage);
+            return _messageGroup.Remove(InternalMessage);
         }
     }
 }

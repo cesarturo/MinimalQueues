@@ -3,22 +3,22 @@ using MinimalQueues.Core;
 
 namespace MinimalQueues.AwsSqs;
 
-internal abstract class SqsMessage : IMessage, IAsyncDisposable
+public abstract class SqsMessage : IMessage, IAsyncDisposable
 {
-    public Message InnerMessage { get; }
+    public Message InternalMessage { get; }
 
-    protected SqsMessage(Message innerMessage)
+    protected SqsMessage(Message internalMessage)
     {
-        InnerMessage = innerMessage;
+        InternalMessage = internalMessage;
     }
     public object? GetProperty(string propertyName)
     {
-        InnerMessage.MessageAttributes.TryGetValue(propertyName, out var value);
+        InternalMessage.MessageAttributes.TryGetValue(propertyName, out var value);
         return value?.StringValue;
     }
     public T? GetProperty<T>(string propertyName)
     {
-        if (InnerMessage.MessageAttributes.TryGetValue(propertyName, out var value))
+        if (InternalMessage.MessageAttributes.TryGetValue(propertyName, out var value))
         {
             if (value.StringValue is T stringValue) return stringValue;
             return (T)Convert.ChangeType(value.StringValue, typeof(T));
