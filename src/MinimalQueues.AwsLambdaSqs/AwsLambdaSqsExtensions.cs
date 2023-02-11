@@ -9,7 +9,7 @@ namespace MinimalQueues.AwsLambdaSqs;
 public static class AwsLambdaSqsExtensions
 {
     public static IOptionsBuilder<QueueProcessorOptions> ConfigureAwsLambdaSqsListener(this IOptionsBuilder<QueueProcessorOptions> builder
-        , string? queueName = null
+        , string? queueArn = null
         , Action<Exception>? onError = null)
     {
         builder.ConfigureServices(services =>
@@ -20,16 +20,16 @@ public static class AwsLambdaSqsExtensions
         return builder.Configure((QueueProcessorOptions queueProcessorOptions, LambdaEventListenerHostedService lambdaListener) =>
         {
             var connection = new AwsLambdaSqsConnection { OnError = onError };
-            lambdaListener.AddConnection(queueName, connection);
+            lambdaListener.AddConnection(queueArn, connection);
             queueProcessorOptions.Connection = connection;
         });
     }
 
     public static IOptionsBuilder<QueueProcessorOptions> AddAwsLambdaSqsListener(this IHostBuilder hostBuilder
-        , string? queueName = null
+        , string? queueArn = null
         , Action<Exception>? onError = null)
     {
         return hostBuilder.AddQueueProcessorHostedService()
-                          .ConfigureAwsLambdaSqsListener(queueName, onError);
+                          .ConfigureAwsLambdaSqsListener(queueArn, onError);
     }
 }

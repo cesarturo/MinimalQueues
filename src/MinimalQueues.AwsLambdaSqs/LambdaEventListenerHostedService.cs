@@ -22,7 +22,7 @@ internal sealed class LambdaEventListenerHostedService : IHostedService
             .RunAsync(_appLifetime.ApplicationStopping);
     }
     private Dictionary<string, AwsLambdaSqsConnection> NamedConnections = new();
-    private AwsLambdaSqsConnection DefaultConnection;
+    private AwsLambdaSqsConnection? DefaultConnection;
     public void AddConnection(string? queueName, AwsLambdaSqsConnection connection)
     {
         if (queueName is null)
@@ -41,18 +41,13 @@ internal sealed class LambdaEventListenerHostedService : IHostedService
     {
         var tasks = sqsEvent.Records.Select(record => Task.Run(async () =>
         {
-            var queueName = GetQueueName(record);
-            var connection = NamedConnections.TryGetValue(queueName, out var namedConnection)
+            var connection = NamedConnections.TryGetValue(record.EventSourceArn, out var namedConnection)
                             ? namedConnection
                             : DefaultConnection;
+            if (connection is null) return;
             await connection.ProcessMessage(new LambdaSqsMessage(record), _appLifetime.ApplicationStopping);
         }));
         await Task.WhenAll(tasks);
-    }
-    private static string GetQueueName(SQSEvent.SQSMessage record)
-    {
-        var arn = record.EventSourceArn;
-        return arn.AsSpan(arn.LastIndexOf(':') + 1).ToString();
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
