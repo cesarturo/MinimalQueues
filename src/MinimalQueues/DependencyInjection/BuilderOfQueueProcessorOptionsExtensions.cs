@@ -15,7 +15,7 @@ public static class BuilderOfQueueProcessorOptionsExtensions
         optionsBuilder.Configure((QueueProcessorOptions queueprocessorOptions, MsOptions.IOptionsMonitor<HandlerOptions> handlerOptions, IServiceProviderIsService isService) =>
         {//This code runs when the HostedService is instantiated
             var options = handlerOptions.Get(optionsBuilder.Name);
-            var serializedMessageHandler = new DeserializeMessageHandler(options, isService);
+            var serializedMessageHandler = new DeserializedMessageHandler(options, isService);
             queueprocessorOptions.MessageHandlerDelegates.Add(serializedMessageHandler.Handle);
         });
         //DeserializedHandler Options will have the same name as QueueProcessor Options.

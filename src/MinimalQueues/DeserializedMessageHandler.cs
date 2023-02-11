@@ -3,12 +3,12 @@ using MinimalQueues.Core;
 
 namespace MinimalQueues;
 
-internal sealed class DeserializeMessageHandler
+internal sealed class DeserializedMessageHandler
 {
     private readonly IDeserializedMessageHandlerEnd[] _ends;
     private readonly MessageHandlerDelegate? _unhandledMessageEnd;
 
-    public DeserializeMessageHandler(HandlerOptions handlerOptions, IServiceProviderIsService isService)
+    public DeserializedMessageHandler(HandlerOptions handlerOptions, IServiceProviderIsService isService)
     {
         _ends = handlerOptions.Ends.Select(endOptions => DeserializedMessageHandlerEndMetaBuilder.Build(endOptions, handlerOptions, isService)).ToArray();
         if (handlerOptions.UnhandledMessageEndOptions is null) return;
