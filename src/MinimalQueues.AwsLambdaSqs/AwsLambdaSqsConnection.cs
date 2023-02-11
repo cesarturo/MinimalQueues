@@ -2,7 +2,7 @@
 
 namespace MinimalQueues.AwsLambdaSqs;
 
-public class AwsLambdaSqsConnection: IQueueConnection
+public sealed class AwsLambdaSqsConnection: IQueueConnection
 {
     public Action<Exception>? OnError { get; set; }
 
@@ -23,6 +23,7 @@ public class AwsLambdaSqsConnection: IQueueConnection
         catch (Exception exception)
         {
             OnError?.Invoke(exception);
+            throw;
         }
     }
 }

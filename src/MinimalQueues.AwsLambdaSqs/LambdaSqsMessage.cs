@@ -8,9 +8,11 @@ public sealed class LambdaSqsMessage : IMessage
     public LambdaSqsMessage(SQSEvent.SQSMessage message)
     {
         InternalMessage = message;
+        _binaryData = new BinaryData(message.Body);
     }
 
-    public SQSEvent.SQSMessage InternalMessage { get; set; }
+    public SQSEvent.SQSMessage InternalMessage { get; }
+    private BinaryData  _binaryData;
     public object? GetProperty(string propertyName)
     {
         return InternalMessage.MessageAttributes.TryGetValue(propertyName, out var attr) 
@@ -25,8 +27,5 @@ public sealed class LambdaSqsMessage : IMessage
             : default;
     }
 
-    public BinaryData GetBody()
-    {
-        return new BinaryData(InternalMessage.Body);
-    }
+    public BinaryData GetBody() => _binaryData;
 }
