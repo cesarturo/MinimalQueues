@@ -3,36 +3,37 @@ using Microsoft.Extensions.Hosting;
 
 namespace MinimalQueues.Core;
 
-public class QueueProcessorHostedService : IHostedService
+public sealed class QueueProcessorHostedService : IHostedService
 {
-    private readonly IServiceScopeFactory _scopeFactory;
-    private readonly QueueProcessorOptions _options;
+    private readonly IServiceScopeFactory     _scopeFactory;
+    private readonly IHostApplicationLifetime _lifeTime;
+    private readonly QueueProcessorOptions    _options;
     
-    public QueueProcessorHostedService(QueueProcessorOptions options, IServiceScopeFactory scopeFactory)
+    public QueueProcessorHostedService(QueueProcessorOptions options
+                                     , IServiceScopeFactory scopeFactory
+                                     , IHostApplicationLifetime lifeTime)
     {
         _scopeFactory = scopeFactory;
-        _options = options;
+        _lifeTime     = lifeTime;
+        _options      = options;
     }
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         if (_options.Connection is null) throw new InvalidOperationException("A connection has not been configured.");
-        await _options.Connection.Start(Processor_ProcessMessageAsync, cancellationToken);
+        await _options.Connection.Start(Processor_ProcessMessageAsync, _lifeTime.ApplicationStopping);
     }
     private async Task Processor_ProcessMessageAsync(IMessage message, CancellationToken cancellationToken)
     {
         using var scope = _scopeFactory.CreateScope();
-        var serviceProvider = scope.ServiceProvider;
-        await new MessageHandlerDelegatesInvoker(_options.MessageHandlerDelegates, cancellationToken)
-            .Handle(message, serviceProvider);
+        await new MessageHandlerDelegatesInvoker(_options.MessageHandlerDelegates, _lifeTime.ApplicationStopping)
+            .Handle(message, scope.ServiceProvider);
     }
     public async Task StopAsync(CancellationToken cancellationToken)
     {
-        if (_options.Connection is IAsyncDisposable asyncDisposable)
+        switch (_options.Connection)
         {
-            await asyncDisposable.DisposeAsync();
-            return;
+            case IAsyncDisposable asyncDisposable: await asyncDisposable.DisposeAsync(); break;
+            case IDisposable      disposable:      disposable.Dispose(); break;
         }
-        if(_options.Connection is IDisposable disposable)
-            disposable.Dispose();
     }
 }

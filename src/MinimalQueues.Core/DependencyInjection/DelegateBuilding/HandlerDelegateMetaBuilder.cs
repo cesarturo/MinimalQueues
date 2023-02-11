@@ -8,8 +8,6 @@ internal static class HandlerDelegateMetaBuilder
 {
     internal static MessageHandlerDelegate Build(Delegate handlerDelegate, IServiceProviderIsService isService)
     {
-        var delegateParameters = DelegateParametersClassifier.Classify(handlerDelegate, isService);
-        
         var targetInstanceExpression = handlerDelegate.Target is { } delegateTarget
             ? Expression.Constant(delegateTarget)
             : null;
@@ -21,6 +19,7 @@ internal static class HandlerDelegateMetaBuilder
         var serviceProviderParameter   = Expression.Parameter(typeof(IServiceProvider));
         var cancellationTokenParameter = Expression.Parameter(typeof(CancellationToken));
 
+        var delegateParameters = DelegateParametersClassifier.Classify(handlerDelegate, isService);
         var callParameters = delegateParameters.Select(p => p.kind switch
         {
             ParameterKind.message      => messageParameter,
@@ -45,9 +44,9 @@ internal static class HandlerDelegateMetaBuilder
         ,MethodInfo getPropertyMethodDefinition
         ,ParameterInfo parameterInfo)
     {
-        var propAttribute = parameterInfo.GetCustomAttribute<PropAttribute>()!;
+        var propAttribute       = parameterInfo.GetCustomAttribute<PropAttribute>()!;
         var messagePropertyName = propAttribute.PropertyName;
-        var getPropertyMethod = getPropertyMethodDefinition.MakeGenericMethod(parameterInfo.ParameterType);
+        var getPropertyMethod   = getPropertyMethodDefinition.MakeGenericMethod(parameterInfo.ParameterType);
         return Expression.Convert(Expression.Call(messageParameter
                 , getPropertyMethod
                 , Expression.Constant(messagePropertyName))
@@ -55,12 +54,12 @@ internal static class HandlerDelegateMetaBuilder
     }
 
     private static Expression BuildGetServiceExpression(ParameterExpression serviceProviderParameter
-        , CommonReflection reflection
-        , ParameterInfo parameterInfo)
+                                                      , CommonReflection reflection
+                                                      , ParameterInfo parameterInfo)
     {
         return Expression.Convert(Expression.Call(serviceProviderParameter
-                ,reflection.GetServiceMethod
-                ,Expression.Constant(parameterInfo.ParameterType))
+                , reflection.GetServiceMethod
+                , Expression.Constant(parameterInfo.ParameterType))
             ,parameterInfo.ParameterType);
     }
 }

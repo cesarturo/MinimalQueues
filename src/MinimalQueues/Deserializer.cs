@@ -2,7 +2,7 @@
 
 namespace MinimalQueues;
 
-public class Deserializer : IDeserializer
+internal sealed class Deserializer : IDeserializer
 {
     private readonly JsonSerializerOptions? _options;
 

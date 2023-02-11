@@ -15,11 +15,11 @@ public static class ServiceCollectionExtensions
     {
         services.AddSingleton<IHostedService>(serviceProvider =>
         {
-            var options = serviceProvider
-                .GetRequiredService<MsOptions.IOptionsMonitor<QueueProcessorOptions>>()
-                .Get(queueProcessorName);
-            var serviceScopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
-            return new QueueProcessorHostedService(options, serviceScopeFactory);
+            var options      = serviceProvider.GetRequiredService<MsOptions.IOptionsMonitor<QueueProcessorOptions>>()
+                                              .Get(queueProcessorName);
+            var scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
+            var appLifeTime  = serviceProvider.GetRequiredService<IHostApplicationLifetime>();
+            return new QueueProcessorHostedService(options, scopeFactory, appLifeTime);
         });
         return services.AddOptions<QueueProcessorOptions>(queueProcessorName);
     }

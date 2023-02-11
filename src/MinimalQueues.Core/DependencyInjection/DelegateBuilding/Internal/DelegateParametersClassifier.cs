@@ -5,13 +5,10 @@ namespace MinimalQueues.Core;
 
 internal static class DelegateParametersClassifier
 {
-    internal static (ParameterInfo parameterInfo, ParameterKind kind)[] Classify(Delegate handlerDelegate, IServiceProviderIsService isService)
+    internal static IEnumerable<(ParameterInfo parameterInfo, ParameterKind kind)> Classify(Delegate handlerDelegate, IServiceProviderIsService isService)
     {
-        var commonReflection = new CommonReflection();
-        (ParameterInfo parameterInfo, ParameterKind kind)[] parametersClassified = 
-            handlerDelegate.Method.GetParameters()
-            .Select(parameterInfo => GetParameterWithType(parameterInfo, isService, commonReflection))
-            .ToArray();
+        var parametersClassified = handlerDelegate.Method.GetParameters()
+            .Select(parameterInfo => GetParameterWithType(parameterInfo, isService, new CommonReflection()));
         return parametersClassified;
     }
 

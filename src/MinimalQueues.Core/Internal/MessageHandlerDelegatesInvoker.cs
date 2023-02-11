@@ -3,9 +3,9 @@
     internal class MessageHandlerDelegatesInvoker
     {
         private readonly List<MessageHandlerDelegate> _messageHandlerDelegates;
-        private readonly CancellationToken _token;
-        private int _i;
-        private IServiceProvider? _provider;
+        private readonly CancellationToken            _token;
+        private int                                   _i;
+        private IServiceProvider?                     _provider;
         internal MessageHandlerDelegatesInvoker(List<MessageHandlerDelegate> messageHandlerDelegates, CancellationToken token)
         {
             _messageHandlerDelegates = messageHandlerDelegates;
