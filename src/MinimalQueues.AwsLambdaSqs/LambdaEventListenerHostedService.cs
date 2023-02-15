@@ -23,17 +23,17 @@ internal sealed class LambdaEventListenerHostedService : IHostedService
     }
     private Dictionary<string, AwsLambdaSqsConnection> NamedConnections = new();
     private AwsLambdaSqsConnection? DefaultConnection;
-    public void AddConnection(string? queueName, AwsLambdaSqsConnection connection)
+    public void AddConnection(AwsLambdaSqsConnection connection)
     {
-        if (queueName is null)
+        if (connection.QueueArn is null)
         {
             DefaultConnection = DefaultConnection is null 
                 ? connection
                 : throw new Exception("A default AwsLambdaSqsConnection is already registered.");
         }
-        else if (!NamedConnections.TryAdd(queueName, connection))
+        else if (!NamedConnections.TryAdd(connection.QueueArn, connection))
         {
-            throw new Exception($"An AwsLambdaSqsConnection named {queueName} is already registered.");
+            throw new Exception($"An AwsLambdaSqsConnection with arn {connection.QueueArn} is already registered.");
         }
     }
 

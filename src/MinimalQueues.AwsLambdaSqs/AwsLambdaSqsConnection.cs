@@ -2,8 +2,10 @@
 
 namespace MinimalQueues.AwsLambdaSqs;
 
-public sealed class AwsLambdaSqsConnection: IQueueConnection
+public sealed class AwsLambdaSqsConnection: IQueueConnection, IAwsLambdaSqsConnectionConfiguration
 {
+    public string? QueueArn { get; set; }
+
     public Action<Exception>? OnError { get; set; }
 
     private Func<IMessage, CancellationToken, Task>? _processMessageDelegate;
