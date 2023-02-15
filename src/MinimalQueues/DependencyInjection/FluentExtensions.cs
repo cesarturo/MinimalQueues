@@ -5,6 +5,11 @@ namespace MinimalQueues;
 
 public static class FluentExtensions
 {
+    public static IOptionsBuilder<HandlerOptions> ConfigureJson(this IOptionsBuilder<HandlerOptions> optionsBuilder
+        , JsonSerializerOptions jsonSerializerOptions)
+    {
+        return optionsBuilder.Configure(handlerOptions => handlerOptions.DeserializerInstance = new Deserializer(jsonSerializerOptions));
+    }
     public static IOptionsBuilder<EndOptions> Use(this IOptionsBuilder<HandlerOptions> optionsBuilder, Delegate handlerDelegate
         , string name)
     {
