@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <Version>1.0.0-rc2.4</Version>
+    <Version>1.0.0-rc3</Version>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <RepositoryUrl>https://github.com/cesarturo/MinimalQueues</RepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -16,8 +16,6 @@
 
   <ItemGroup>
     <PackageReference Include="Amazon.Lambda.RuntimeSupport" Version="1.8.3" />
-    <PackageReference Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.3.1" />
-    <PackageReference Include="Amazon.Lambda.SQSEvents" Version="2.1.0" />
     <PackageReference Include="MinimalQueues.Core" Version="1.0.0-rc2.2" />
   </ItemGroup>
 

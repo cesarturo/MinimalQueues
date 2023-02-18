@@ -1,5 +1,4 @@
-﻿using Amazon.Lambda.SQSEvents;
-using MinimalQueues.Core;
+﻿using MinimalQueues.Core;
 
 namespace MinimalQueues.AwsLambdaSqs;
 

@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
+using System.Text.Json;
 using Amazon.Lambda.Core;
-using Amazon.Lambda.SQSEvents;
 using Microsoft.Extensions.Hosting;
 
 namespace MinimalQueues.AwsLambdaSqs;
@@ -8,14 +8,14 @@ namespace MinimalQueues.AwsLambdaSqs;
 internal sealed class MessageProcessor
 {
     private readonly IHostApplicationLifetime _appLifetime;
-    private Dictionary<string, AwsLambdaSqsConnection> NamedConnections = new();
+    private readonly Dictionary<string, AwsLambdaSqsConnection> NamedConnections = new();
     private AwsLambdaSqsConnection? DefaultConnection;
+    private readonly JsonSerializerOptions _inputSerializerOptions = new (){ PropertyNameCaseInsensitive = true };
 
     public MessageProcessor(IHostApplicationLifetime appLifetime)
     {
         _appLifetime = appLifetime;
     }
-
     public void AddConnection(AwsLambdaSqsConnection connection)
     {
         if (connection.QueueArn is null)
@@ -29,19 +29,11 @@ internal sealed class MessageProcessor
             throw new Exception($"An AwsLambdaSqsConnection with arn {connection.QueueArn} is already registered.");
         }
     }
-
-    public async Task<SQSBatchResponse> FunctionHandler(SQSEvent sqsEvent, ILambdaContext context)
+    public async Task<Stream?> FunctionHandler(Stream stream, ILambdaContext context)
     {
-        var failedIds = await ProcessMessages(sqsEvent);
-        return BuildResponse(failedIds);
-    }
-
-    private static SQSBatchResponse BuildResponse(string?[] failedIds)
-    {
-        var failures = failedIds.Where(failedId => failedId is not null)
-            .Select(failedId => new SQSBatchResponse.BatchItemFailure { ItemIdentifier = failedId })
-            .ToList();
-        return new SQSBatchResponse { BatchItemFailures = failures };
+        var sqsEvent = JsonSerializer.Deserialize<SQSEvent>(stream, _inputSerializerOptions);
+        var messageIdOfErrors = await ProcessMessages(sqsEvent);
+        return ResponseStreamBuilder.Build(messageIdOfErrors);
     }
 
     private Task<string?[]> ProcessMessages(SQSEvent sqsEvent)
@@ -55,9 +47,8 @@ internal sealed class MessageProcessor
         }
         return Task.WhenAll(tasks);
     }
-
     private async Task<string?> ProcessMessage(SQSEvent.SQSMessage record)
-    {
+    {//When processing fails return the MessageId, when succeeds return null
         var connection = NamedConnections.TryGetValue(record.EventSourceArn, out var namedConnection)
             ? namedConnection
             : DefaultConnection;
@@ -70,7 +61,6 @@ internal sealed class MessageProcessor
         {
             return record.MessageId;
         }
-
         return null;
     }
 }
