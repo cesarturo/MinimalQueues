@@ -33,10 +33,13 @@ public sealed class AzureServiceBusConnection : IQueueConnection, IAzureServiceB
     private ServiceBusClient GetClient()
     {
         if (ConnectionString is not null)
-            return new ServiceBusClient(ConnectionString, ServiceBusClientOptions); 
+        {
+            EntityPath ??= ServiceBusConnectionStringProperties.Parse(ConnectionString).EntityPath;
+            return new ServiceBusClient(ConnectionString, ServiceBusClientOptions);
+        }
         if(   Namespace     is not null
-           && EntityPath    is not null
-           && Credential    is not null)
+              && EntityPath    is not null
+              && Credential    is not null)
             return new ServiceBusClient(Namespace, Credential, ServiceBusClientOptions);
         if (Namespace is not null)
             return new ServiceBusClient(Namespace);

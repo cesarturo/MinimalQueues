@@ -22,7 +22,7 @@ public static class HostBuilderExtensions
 
     public static IOptionsBuilder<QueueProcessorOptions> AddAzureServiceBusListener(this IHostBuilder hostBuilder
         , string connectionString
-        , string entityPath
+        , string? entityPath = null
         , ServiceBusClientOptions? serviceBusClientOptions = null
         , ServiceBusProcessorOptions? serviceBusProcessorOptions = null
         , Func<ProcessErrorEventArgs, Task>? onError = null)

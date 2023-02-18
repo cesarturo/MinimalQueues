@@ -10,7 +10,7 @@ public static class ServiceCollectionExtensions
 {
     public static IOptionsBuilder<QueueProcessorOptions> AddAzureServiceBusListener(this ServiceCollection services
         , string @namespace
-        , string entityPath
+        , string? entityPath = null
         , TokenCredential? credential = null
         , ServiceBusClientOptions? serviceBusClientOptions = null
         , ServiceBusProcessorOptions? serviceBusProcessorOptions = null

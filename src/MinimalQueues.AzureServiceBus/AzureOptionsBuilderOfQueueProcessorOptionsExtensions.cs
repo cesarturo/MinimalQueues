@@ -2,7 +2,6 @@
 using Azure.Identity;
 using Azure.Messaging.ServiceBus;
 using MinimalQueues.Core;
-using MinimalQueues.Core.AzureServiceBus;
 using MinimalQueues.Core.Options;
 
 namespace MinimalQueues.AzureServiceBus;
@@ -12,7 +11,7 @@ public static class AzureOptionsBuilderOfQueueProcessorOptionsExtensions
     public static IOptionsBuilder<QueueProcessorOptions> ConfigureAzureServiceBusListener(
         this IOptionsBuilder<QueueProcessorOptions> builder
         , string @namespace
-        , string entityPath
+        , string? entityPath = null
         , TokenCredential? credential = null
         , ServiceBusClientOptions? serviceBusClientOptions = null
         , ServiceBusProcessorOptions? serviceBusProcessorOptions = null
