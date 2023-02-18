@@ -12,31 +12,31 @@ public static class AwsLambdaSqsExtensions
         , string? queueArn = null
         , Action<Exception>? onError = null)
     {
-        builder.ConfigureServices(services =>
+        return builder.ConfigureAwsLambdaSqsListener((configuration, _) =>
         {
-            services.TryAddSingleton<LambdaEventListenerHostedService>();
-            services.AddHostedService(sp => sp.GetRequiredService<LambdaEventListenerHostedService>());
+            configuration.QueueArn = queueArn;
+            configuration.OnError = onError;
         });
-        return builder.Configure((QueueProcessorOptions queueProcessorOptions, LambdaEventListenerHostedService lambdaListener) =>
-        {
-            var connection = new AwsLambdaSqsConnection { QueueArn = queueArn, OnError = onError };
-            lambdaListener.AddConnection(connection);
-            queueProcessorOptions.Connection = connection;
-        });
+    }
+    public static IOptionsBuilder<QueueProcessorOptions> ConfigureAwsLambdaSqsListener(this IOptionsBuilder<QueueProcessorOptions> builder
+        , Action<IAwsLambdaSqsConnectionConfiguration, IServiceProvider> configure)
+    {
+        return builder.ConfigureAwsLambdaSqsListener<IServiceProvider>(configure);
     }
     public static IOptionsBuilder<QueueProcessorOptions> ConfigureAwsLambdaSqsListener<TDependency>(this IOptionsBuilder<QueueProcessorOptions> builder
         , Action<IAwsLambdaSqsConnectionConfiguration, TDependency> configure) where TDependency : class
     {
         builder.ConfigureServices(services =>
         {
+            services.TryAddSingleton<MessageProcessor>();
             services.TryAddSingleton<LambdaEventListenerHostedService>();
             services.AddHostedService(sp => sp.GetRequiredService<LambdaEventListenerHostedService>());
         });
-        return builder.Configure((QueueProcessorOptions queueProcessorOptions, TDependency dependency, LambdaEventListenerHostedService lambdaListener) =>
+        return builder.Configure((QueueProcessorOptions queueProcessorOptions, TDependency dependency, MessageProcessor messageProcessor) =>
         {
             var connection = new AwsLambdaSqsConnection();
             configure(connection, dependency);
-            lambdaListener.AddConnection(connection);
+            messageProcessor.AddConnection(connection);
             queueProcessorOptions.Connection = connection;
         });
     }
@@ -47,6 +47,12 @@ public static class AwsLambdaSqsExtensions
     {
         return hostBuilder.AddQueueProcessorHostedService()
                           .ConfigureAwsLambdaSqsListener(queueArn, onError);
+    }
+    public static IOptionsBuilder<QueueProcessorOptions> AddAwsLambdaSqsListener(this IHostBuilder hostBuilder
+        , Action<IAwsLambdaSqsConnectionConfiguration, IServiceProvider> configure)
+    {
+        return hostBuilder.AddQueueProcessorHostedService()
+            .ConfigureAwsLambdaSqsListener(configure);
     }
     public static IOptionsBuilder<QueueProcessorOptions> AddAwsLambdaSqsListener<TDependency>(this IHostBuilder hostBuilder
         , Action<IAwsLambdaSqsConnectionConfiguration, TDependency> configure) where TDependency : class

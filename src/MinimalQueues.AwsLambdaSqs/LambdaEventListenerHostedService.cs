@@ -1,5 +1,4 @@
-﻿using Amazon.Lambda.Core;
-using Amazon.Lambda.RuntimeSupport;
+﻿using Amazon.Lambda.RuntimeSupport;
 using Amazon.Lambda.Serialization.SystemTextJson;
 using Amazon.Lambda.SQSEvents;
 using Microsoft.Extensions.Hosting;
@@ -9,45 +8,19 @@ namespace MinimalQueues.AwsLambdaSqs;
 internal sealed class LambdaEventListenerHostedService : IHostedService
 {
     private readonly IHostApplicationLifetime _appLifetime;
+    private readonly MessageProcessor _messageProcessor;
     private Task? _bootstrapperTask;
-    public LambdaEventListenerHostedService(IHostApplicationLifetime appLifetime)
+    public LambdaEventListenerHostedService(IHostApplicationLifetime appLifetime, MessageProcessor messageProcessor)
     {
         _appLifetime = appLifetime;
+        _messageProcessor = messageProcessor;
     }
     private void StartLambda()
     {
         _bootstrapperTask = LambdaBootstrapBuilder
-            .Create<SQSEvent>(FunctionHandler, new DefaultLambdaJsonSerializer())
+            .Create<SQSEvent>(_messageProcessor.FunctionHandler, new DefaultLambdaJsonSerializer())
             .Build()
             .RunAsync(_appLifetime.ApplicationStopping);
-    }
-    private Dictionary<string, AwsLambdaSqsConnection> NamedConnections = new();
-    private AwsLambdaSqsConnection? DefaultConnection;
-    public void AddConnection(AwsLambdaSqsConnection connection)
-    {
-        if (connection.QueueArn is null)
-        {
-            DefaultConnection = DefaultConnection is null 
-                ? connection
-                : throw new Exception("A default AwsLambdaSqsConnection is already registered.");
-        }
-        else if (!NamedConnections.TryAdd(connection.QueueArn, connection))
-        {
-            throw new Exception($"An AwsLambdaSqsConnection with arn {connection.QueueArn} is already registered.");
-        }
-    }
-
-    private async Task FunctionHandler(SQSEvent sqsEvent, ILambdaContext context)
-    {
-        var tasks = sqsEvent.Records.Select(record => Task.Run(async () =>
-        {
-            var connection = NamedConnections.TryGetValue(record.EventSourceArn, out var namedConnection)
-                            ? namedConnection
-                            : DefaultConnection;
-            if (connection is null) return;
-            await connection.ProcessMessage(new LambdaSqsMessage(record), _appLifetime.ApplicationStopping);
-        }));
-        await Task.WhenAll(tasks);
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
