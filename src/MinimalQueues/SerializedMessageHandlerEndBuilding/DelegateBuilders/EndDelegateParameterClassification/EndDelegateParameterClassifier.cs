@@ -11,8 +11,20 @@ internal static class EndDelegateParameterClassifier
         var parametersClassified = handlerDelegate.Method.GetParameters()
             .Select(parameterInfo => GetParameterWithType(parameterInfo, isService))
             .ToArray();
-        var bodyParameter = parametersClassified.FirstOrDefault(itm => itm.type == ParameterKind.body);
+        (ParameterInfo parameterInfo, ParameterKind type) bodyParameter;
+        try
+        {
+            bodyParameter = parametersClassified.SingleOrDefault(itm => itm.type == ParameterKind.body);
+        }
+        catch (InvalidOperationException)
+        {
+            throw CreateMoreThanOneBodyParameterException(handlerDelegate);
+        }
         return new EndDelegateParameters(parametersClassified, bodyParameter.parameterInfo);
+    }
+    private static Exception CreateMoreThanOneBodyParameterException(Delegate handlerDelegate)
+    {
+        return new Exception($"Handler delegate {handlerDelegate.Method} contains more than one body parameter.");
     }
 
     private static (ParameterInfo parameterInfo, ParameterKind type) GetParameterWithType(ParameterInfo parameterInfo, IServiceProviderIsService isService)
