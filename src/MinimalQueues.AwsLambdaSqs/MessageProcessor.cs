@@ -29,7 +29,7 @@ internal sealed class MessageProcessor
             throw new Exception($"An AwsLambdaSqsConnection with arn {connection.QueueArn} is already registered.");
         }
     }
-    public async Task<Stream?> FunctionHandler(Stream stream, ILambdaContext context)
+    public async Task<Stream> FunctionHandler(Stream stream, ILambdaContext context)
     {
         var sqsEvent = JsonSerializer.Deserialize<SQSEvent>(stream, _inputSerializerOptions);
         var messageIdOfErrors = await ProcessMessages(sqsEvent);

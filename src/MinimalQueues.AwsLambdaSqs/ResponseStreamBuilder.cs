@@ -6,7 +6,7 @@ internal static class ResponseStreamBuilder
 {//this class builds a stream based on: https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#services-sqs-batchfailurereporting
  //The same result can be achieved by serializing the SQSEvent class from Amazon.Lambda.SQSEvents
 
-    public static Stream? Build(string?[] messageIdOfErrors)
+    public static Stream Build(string?[] messageIdOfErrors)
     {
         MemoryStream? stream = null;
         Utf8JsonWriter? writer = null;
@@ -26,13 +26,13 @@ internal static class ResponseStreamBuilder
             writer.WriteString("itemIdentifier", result);
             writer.WriteEndObject();
         }
-        if (stream is not null)
-        {
-            writer.WriteEndArray();
-            writer.WriteEndObject();
-            writer.Dispose();
-            stream.Position = 0;
-        }
+
+        if (stream is null) return new MemoryStream();
+
+        writer.WriteEndArray();
+        writer.WriteEndObject();
+        writer.Dispose();
+        stream.Position = 0;
         return stream;
     }
 }
