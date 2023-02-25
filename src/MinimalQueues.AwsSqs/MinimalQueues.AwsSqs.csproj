@@ -12,8 +12,15 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition=" '$(Configuration)'=='Release' ">
     <PackageReference Include="MinimalQueues.Core" Version="1.0.0-rc4" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(Configuration)'=='Debug' ">
+    <ProjectReference Include="..\MinimalQueues.Core\MinimalQueues.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="MinimalSqsClient" Version="1.0.0-rc4" />
     <PackageReference Include="System.Memory.Data" Version="7.0.0" />
   </ItemGroup>
@@ -21,5 +28,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
   </ItemGroup>
+
+
 
 </Project>

@@ -1,4 +1,4 @@
-﻿namespace MinimalQueues.AwsSqs;
+﻿namespace MinimalQueues.AwsSqs.Connection.Internal.OnDemand;
 
 internal class BackoffManager
 {

@@ -1,6 +1,6 @@
 ﻿using MinimalSqsClient;
 
-namespace MinimalQueues.AwsSqs;
+namespace MinimalQueues.AwsSqs.Connection.Internal.OnDemand;
 
 internal sealed class OnDemandMessageReceiver : IMessageReceiver
 {

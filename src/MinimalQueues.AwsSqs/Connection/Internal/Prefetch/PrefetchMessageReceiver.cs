@@ -1,7 +1,7 @@
 ﻿using System.Threading.Channels;
 using MinimalSqsClient;
 
-namespace MinimalQueues.AwsSqs;
+namespace MinimalQueues.AwsSqs.Connection.Internal.Prefetch;
 
 internal class PrefetchMessageReceiver : IMessageReceiver
 {

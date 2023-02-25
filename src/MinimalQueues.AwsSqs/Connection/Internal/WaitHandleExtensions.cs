@@ -1,6 +1,6 @@
-﻿namespace MinimalQueues.AwsSqs;
+﻿namespace MinimalQueues.AwsSqs.Connection.Internal;
 
-public static class WaitHandleExtensions
+internal static class WaitHandleExtensions
 {
     public static Task WaitAsync(this WaitHandle waitHandle, CancellationToken? cancellation=null)
     {

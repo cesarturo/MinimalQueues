@@ -2,7 +2,7 @@
 
 namespace MinimalQueues.AwsLambdaSqs;
 
-public sealed class AwsLambdaSqsConnection: IQueueConnection, IAwsLambdaSqsConnectionConfiguration
+internal sealed class AwsLambdaSqsConnection: IQueueConnection, IAwsLambdaSqsConnectionConfiguration
 {
     public string? QueueArn { get; set; }
 

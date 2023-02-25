@@ -12,6 +12,14 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup Condition=" '$(Configuration)'=='Release' ">
+    <PackageReference Include="MinimalQueues.Core" Version="1.0.0-rc3" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(Configuration)'=='Debug' ">
+    <ProjectReference Include="..\MinimalQueues.Core\MinimalQueues.Core.csproj" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Azure.Identity" Version="1.9.0-beta.1" />
     <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.12.0" />
@@ -19,7 +27,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
-    <PackageReference Include="MinimalQueues.Core" Version="1.0.0-rc3" />
   </ItemGroup>
 
 </Project>

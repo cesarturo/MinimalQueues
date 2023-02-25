@@ -1,10 +1,12 @@
 ﻿using Amazon;
 using Amazon.Runtime;
+using MinimalQueues.AwsSqs.Connection.Internal;
+using MinimalQueues.AwsSqs.Connection.Internal.OnDemand;
+using MinimalQueues.AwsSqs.Connection.Internal.Prefetch;
 using MinimalQueues.Core;
-using MinimalQueues.Core.AwsSqs;
 using MinimalSqsClient;
 
-namespace MinimalQueues.AwsSqs;
+namespace MinimalQueues.AwsSqs.Connection;
 
 internal sealed class AwsSqsConnection : IQueueConnection, IDisposable
 {

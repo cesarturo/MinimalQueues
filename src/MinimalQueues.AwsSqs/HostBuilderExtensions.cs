@@ -1,6 +1,7 @@
 ﻿using Amazon;
 using Amazon.Runtime;
 using Microsoft.Extensions.Hosting;
+using MinimalQueues.AwsSqs.Connection;
 using MinimalQueues.Core;
 using MinimalQueues.Core.Options;
 

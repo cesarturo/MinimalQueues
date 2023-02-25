@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics;
 
-namespace MinimalQueues.AwsSqs;
+namespace MinimalQueues.AwsSqs.Connection.Internal;
 
-public struct Countdown
+internal struct Countdown
 {
     private readonly double _duration;
     private long _start;
