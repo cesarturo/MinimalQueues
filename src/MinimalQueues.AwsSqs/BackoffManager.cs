@@ -52,7 +52,7 @@ internal class BackoffManager
         lock (this)
         {
             if (_status is Status.Waiting) return;
-            var waitTime = _connection.BackOffFunction(++_backoffCount);
+            var waitTime = _connection.Configuration.BackOffFunction(++_backoffCount);
             DisposeTimerNoThreadSafe();
             _semaphore ??= new SemaphoreSlim(0);
             _semaphoreReleaseCount = 0;
@@ -73,7 +73,7 @@ internal class BackoffManager
             _semaphore!.Release(releaseQuantity);
             _semaphoreReleaseCount += releaseQuantity;
             DisposeTimerNoThreadSafe();
-            if (_semaphoreReleaseCount >= _connection.MaxConcurrentCalls)
+            if (_semaphoreReleaseCount >= _connection.Configuration.MaxConcurrentCalls)
             {
                 _semaphore.Release(int.MaxValue - _semaphore.CurrentCount);
                 _semaphore.Dispose();

@@ -1,27 +1,26 @@
-﻿using Amazon.SQS.Model;
-using MinimalQueues.Core;
+﻿using MinimalQueues.Core;
 
 namespace MinimalQueues.AwsSqs;
 
 public abstract class SqsMessage : IMessage, IAsyncDisposable
 {
-    public Message InternalMessage { get; }
+    public MinimalSqsClient.SqsMessage InternalMessage { get; }
 
-    protected SqsMessage(Message internalMessage)
+    protected SqsMessage(MinimalSqsClient.SqsMessage internalMessage)
     {
         InternalMessage = internalMessage;
     }
     public object? GetProperty(string propertyName)
     {
         InternalMessage.MessageAttributes.TryGetValue(propertyName, out var value);
-        return value?.StringValue;
+        return value;
     }
     public T? GetProperty<T>(string propertyName)
     {
         if (InternalMessage.MessageAttributes.TryGetValue(propertyName, out var value))
         {
-            if (value.StringValue is T stringValue) return stringValue;
-            return (T)Convert.ChangeType(value.StringValue, typeof(T));
+            if (value is T stringValue) return stringValue;
+            return (T)Convert.ChangeType(value, typeof(T));
         }
         return default;
     }

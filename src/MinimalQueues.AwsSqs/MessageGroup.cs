@@ -1,20 +1,19 @@
-﻿using Amazon.SQS.Model;
-namespace MinimalQueues.AwsSqs;
+﻿namespace MinimalQueues.AwsSqs;
 
 internal class MessageGroup: IAsyncDisposable
 {
-    private readonly AwsSqsConnection _connection;
-    private          HashSet<Message> _messages;
-    private readonly PeriodicTimer    _timer;
-    private readonly Task             _updateVisibilityTask;
+    private readonly AwsSqsConnection            _connection;
+    private HashSet<MinimalSqsClient.SqsMessage> _messages;
+    private readonly PeriodicTimer               _timer;
+    private readonly Task                        _updateVisibilityTask;
 
     public MessageGroup(AwsSqsConnection connection)
     {
-        _connection = connection;
-        _timer = new PeriodicTimer(TimeSpan.FromSeconds(_connection.RenewVisibilityWaitTime));
+        _connection           = connection;
+        _timer                = new PeriodicTimer(TimeSpan.FromSeconds(_connection.Configuration.RenewVisibilityWaitTime));
         _updateVisibilityTask = UpdateVisibility();
     }
-    public IEnumerable<PrefetchedSqsMessage> Initialize(List<Message>? messages)
+    public IEnumerable<PrefetchedSqsMessage> Initialize(List<MinimalSqsClient.SqsMessage>? messages)
     {
         if (messages is null) yield break;
         _messages = messages.ToHashSet();
@@ -30,21 +29,20 @@ internal class MessageGroup: IAsyncDisposable
         {
             await updatevisibilityTask;
             var requestEntries = GetRequestsEntries();
-            if (requestEntries.Count is 0) continue;
-            var request = new ChangeMessageVisibilityBatchRequest(_connection.QueueUrl, requestEntries);
-            updatevisibilityTask = _connection._sqsClient.ChangeMessageVisibilityBatchAsync(request);
+            if (requestEntries.Length is 0) continue;
+            updatevisibilityTask = _connection._sqsClient.ChangeMessageVisibilityBatchAsync(requestEntries, _connection.Configuration.VisibilityTimeout);
         }
     }
 
-    private List<ChangeMessageVisibilityBatchRequestEntry> GetRequestsEntries()
+    private string[] GetRequestsEntries()
     {
         lock (this)
         {
-            return _messages.Select(m => new ChangeMessageVisibilityBatchRequestEntry(m.ReceiptHandle, m.ReceiptHandle)).ToList(); 
+            return _messages.Select(m => m.ReceiptHandle).ToArray(); 
         }
     }
 
-    private ValueTask Remove(Message message)
+    private ValueTask Remove(MinimalSqsClient.SqsMessage message)
     {
         bool dispose = false;
         lock (this)
@@ -69,7 +67,7 @@ internal class MessageGroup: IAsyncDisposable
     {
         private readonly MessageGroup _messageGroup;
 
-        public PrefetchedSqsMessage(MessageGroup messageGroup, Message internalMessage)
+        public PrefetchedSqsMessage(MessageGroup messageGroup, MinimalSqsClient.SqsMessage internalMessage)
             :base(internalMessage)
         {
             _messageGroup = messageGroup;

@@ -1,6 +1,5 @@
 ﻿using Amazon;
 using Amazon.Runtime;
-using Amazon.SQS;
 using Microsoft.Extensions.Hosting;
 using MinimalQueues.Core;
 using MinimalQueues.Core.Options;
@@ -12,7 +11,6 @@ public static class HostBuilderExtensions
     public static IOptionsBuilder<QueueProcessorOptions> AddAwsSqsListener(this IHostBuilder hostBuilder
         , string? queueUrl = null
         , AWSCredentials? credentials = null
-        , AmazonSQSConfig? clientConfig = null
         , RegionEndpoint? region = null
         , int maxConcurrency = 1
         , Func<int, TimeSpan>? backoffFunction = null
@@ -26,7 +24,6 @@ public static class HostBuilderExtensions
         var queueProcessorOptions = hostBuilder.AddQueueProcessorHostedService();
         return queueProcessorOptions.ConfigureAwsSqsListener(queueUrl
             , credentials
-            , clientConfig
             , region
             , maxConcurrency
             , backoffFunction
@@ -38,14 +35,14 @@ public static class HostBuilderExtensions
             , onError);
     }
     public static IOptionsBuilder<QueueProcessorOptions> AddAwsSqsListener<TDependency>(this IHostBuilder hostBuilder
-        , Action<IAwsSqsConnectionConfiguration, TDependency> configureConnection) where TDependency : class
+        , Action<AwsSqsConnectionConfiguration, TDependency> configureConnection) where TDependency : class
     {
         var queueProcessorOptions = hostBuilder.AddQueueProcessorHostedService();
         queueProcessorOptions.ConfigureAwsSqsListener();//to set defaults
         return queueProcessorOptions.ConfigureAwsSqsListener(configureConnection);
     }
     public static IOptionsBuilder<QueueProcessorOptions> AddAwsSqsListener(this IHostBuilder hostBuilder
-        , Action<IAwsSqsConnectionConfiguration, IServiceProvider> configureConnection)
+        , Action<AwsSqsConnectionConfiguration, IServiceProvider> configureConnection)
     {
         var queueProcessorOptions = hostBuilder.AddQueueProcessorHostedService();
         queueProcessorOptions.ConfigureAwsSqsListener();//to set defaults

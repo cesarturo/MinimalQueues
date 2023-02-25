@@ -1,5 +1,4 @@
-﻿using Amazon.SQS.Model;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using MinimalQueues.AwsSqs;
 
 namespace MinimalQueues.Core.AwsSqs
@@ -29,14 +28,14 @@ namespace MinimalQueues.Core.AwsSqs
                 }
                 catch (Exception exception)
                 {
-                    _connection.OnError?.Invoke(exception);
+                    _connection.Configuration.OnError?.Invoke(exception);
                 }
             }
         }
 
-        public Activity? TryStartActivity(Message message)
+        public Activity? TryStartActivity(MinimalSqsClient.SqsMessage message)
         {
-            if (message.Attributes.TryGetValue("Diagnostic-Id", out string parentId))
+            if (message.MessageAttributes.TryGetValue("Diagnostic-Id", out string parentId))
             {
                 var activity = new Activity("AwsSqs");
                 activity.SetParentId(parentId);

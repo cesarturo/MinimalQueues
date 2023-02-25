@@ -1,42 +1,32 @@
-﻿using Amazon.SQS;
-using Amazon.SQS.Model;
+﻿using MinimalSqsClient;
 
 namespace MinimalQueues.AwsSqs;
 
 internal sealed class OnDemandMessageReceiver : IMessageReceiver
 {
     private readonly TimeSpan         _visibilityTimeout;
-    private readonly AmazonSQSClient  _sqsClient;
+    private readonly ISqsClient       _sqsClient;
     private readonly AwsSqsConnection _connection;
     private readonly BackoffManager   _backoffManager;
 
     public OnDemandMessageReceiver(AwsSqsConnection connection)
     {
+        var configuration = connection.Configuration;
         _connection        = connection;
-        _visibilityTimeout = TimeSpan.FromSeconds(connection.VisibilityTimeout);
+        _visibilityTimeout = TimeSpan.FromSeconds(configuration.VisibilityTimeout);
         _sqsClient         = connection._sqsClient;
         _backoffManager    = new BackoffManager(connection);
-        var allAttributes  = new List<string>(new[] { "All" });
-        _receiveMessageRequest = new ReceiveMessageRequest(connection.QueueUrl)
-        {
-            MaxNumberOfMessages   = 1,
-            WaitTimeSeconds       = connection.WaitTimeSeconds,
-            AttributeNames        = allAttributes,
-            MessageAttributeNames = allAttributes,
-            VisibilityTimeout     = connection.VisibilityTimeout
-        };
     }
-    private ReceiveMessageRequest _receiveMessageRequest;
     
     public async Task<SqsMessage?> ReceiveMessage(CancellationToken cancellation)
     {
         await _backoffManager.Wait();
-        var renewTimer = new PeriodicTimer(TimeSpan.FromSeconds(_connection.RenewVisibilityWaitTime));
+        var renewTimer = new PeriodicTimer(TimeSpan.FromSeconds(_connection.Configuration.RenewVisibilityWaitTime));
         try
         {
             var countdown = new Countdown(_visibilityTimeout);
             countdown.Start();
-            Message? message = await ReceiveOneMessage(cancellation);
+            MinimalSqsClient.SqsMessage? message = await ReceiveOneMessage(cancellation);
             if (message is null)
             {
                 _backoffManager.Start();
@@ -46,7 +36,7 @@ internal sealed class OnDemandMessageReceiver : IMessageReceiver
             _backoffManager.Release();
             if (countdown.TimedOut)
             {
-                throw new Exception($"{nameof(_sqsClient.ReceiveMessageAsync)} took longer than {nameof(AwsSqsConnection.VisibilityTimeout)}. Message lock may be expired. Message will not be processed.");
+                throw new Exception($"{nameof(_sqsClient.ReceiveMessageAsync)} took longer than {nameof(AwsSqsConnectionConfiguration.VisibilityTimeout)}. Message lock may be expired. Message will not be processed.");
             }
             return new OnDemandSqsMessage(message, _connection, renewTimer);
         }
@@ -61,13 +51,12 @@ internal sealed class OnDemandMessageReceiver : IMessageReceiver
             throw;
         }
     }
-    private async Task<Message?> ReceiveOneMessage(CancellationToken cancellation)
+    private async Task<MinimalSqsClient.SqsMessage?> ReceiveOneMessage(CancellationToken cancellation)
     {
         try
         {
-            var messageResponse = await _sqsClient.ReceiveMessageAsync(_receiveMessageRequest, cancellation);
-            var message = messageResponse.Messages.FirstOrDefault();
-            return message;
+            var sqsMessage = await _sqsClient.ReceiveMessageAsync(_connection.Configuration.WaitTimeSeconds, _connection.Configuration.VisibilityTimeout);
+            return sqsMessage;
         }
         catch
         {

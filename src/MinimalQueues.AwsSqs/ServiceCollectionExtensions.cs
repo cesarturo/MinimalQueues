@@ -1,6 +1,5 @@
 ﻿using Amazon;
 using Amazon.Runtime;
-using Amazon.SQS;
 using Microsoft.Extensions.DependencyInjection;
 using MinimalQueues.Core;
 using MinimalQueues.Core.Options;
@@ -12,7 +11,6 @@ public static class ServiceCollectionExtensions
     public static IOptionsBuilder<QueueProcessorOptions> AddAwsSqsListener(this ServiceCollection services
         , string queueUrl
         , AWSCredentials? credentials = null
-        , AmazonSQSConfig? clientConfig = null
         , RegionEndpoint? region = null
         , int maxConcurrency = 1
         , Func<int, TimeSpan>? backoffFunction = null
@@ -27,7 +25,6 @@ public static class ServiceCollectionExtensions
         return queueProcessorOptions.ConfigureAwsSqsListener(
             queueUrl
             , credentials
-            , clientConfig
             , region
             , maxConcurrency
             , backoffFunction

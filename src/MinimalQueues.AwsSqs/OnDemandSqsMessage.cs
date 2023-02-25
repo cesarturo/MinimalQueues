@@ -1,6 +1,4 @@
-﻿using Amazon.SQS.Model;
-
-namespace MinimalQueues.AwsSqs;
+﻿namespace MinimalQueues.AwsSqs;
 
 internal sealed class OnDemandSqsMessage : SqsMessage
 {
@@ -8,7 +6,7 @@ internal sealed class OnDemandSqsMessage : SqsMessage
     private readonly PeriodicTimer    _timer;
     private readonly Task             _updateVisibilityTask;
 
-    public OnDemandSqsMessage(Message internalMessage, AwsSqsConnection connection, PeriodicTimer renewTimer)
+    public OnDemandSqsMessage(MinimalSqsClient.SqsMessage internalMessage, AwsSqsConnection connection, PeriodicTimer renewTimer)
         :base(internalMessage)
     {
         _connection = connection;
