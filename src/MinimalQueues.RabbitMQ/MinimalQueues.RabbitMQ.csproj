@@ -17,8 +17,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)'=='Debug' ">
-    <!--<ProjectReference Include="..\MinimalQueues.Core\MinimalQueues.Core.csproj" />-->
-    <PackageReference Include="MinimalQueues.Core" Version="1.0.0-rc4" />
+    <ProjectReference Include="..\MinimalQueues.Core\MinimalQueues.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
