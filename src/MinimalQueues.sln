@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MinimalQueues", "MinimalQue
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MinimalQueues.AwsLambdaSqs", "MinimalQueues.AwsLambdaSqs\MinimalQueues.AwsLambdaSqs.csproj", "{5387F903-1586-4124-9211-CB8D4C792A36}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinimalQueues.RabbitMQ", "MinimalQueues.RabbitMQ\MinimalQueues.RabbitMQ.csproj", "{8C3747B9-C47F-48CA-99F7-3C9481B5EBB2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{5387F903-1586-4124-9211-CB8D4C792A36}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5387F903-1586-4124-9211-CB8D4C792A36}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5387F903-1586-4124-9211-CB8D4C792A36}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C3747B9-C47F-48CA-99F7-3C9481B5EBB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C3747B9-C47F-48CA-99F7-3C9481B5EBB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C3747B9-C47F-48CA-99F7-3C9481B5EBB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C3747B9-C47F-48CA-99F7-3C9481B5EBB2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
