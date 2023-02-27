@@ -3,24 +3,45 @@
 
 ## **1<sup>st</sup> step: Configure a Provider**
 
-### Example for **Aws Sqs**
-
-```csharp
-hostBuilder.AddAwsSqsListener(queueUrl: "...the queue url ...", maxConcurrency: 5)
-```
-### Example for **Azure Service Bus**
-```csharp
-hostBuilder.AddAzureServiceBusListener(connectionString: "...ServiceBus connection string..", entityPath: "...the entity path...")
-```
+To consume messages from a queue, first you need a `HostBuilder`:
+````csharp
+var hostBuilder = Host.CreateDefaultBuilder();
+````
+Then configure a provider:
+- ### Example for **Aws Sqs**
+    ```csharp
+    hostBuilder.AddAwsSqsListener(queueUrl: "...the queue url ...", maxConcurrency: 5)
+    ```
+- ### Example for **Azure Service Bus**
+    ```csharp
+    hostBuilder.AddAzureServiceBusListener(connectionString: "...ServiceBus connection string..", entityPath: "...the entity path...")
+    ```
+- ### Example for **RabbitMQ**
+    ```csharp
+    hostBuilder.AddRabbitMQListener(config=>
+    {
+        config.QueueName = "...the queue name...";
+        config.ConfigureConnectionFactory = factory =>
+        {
+            factory.UserName = "...user with read permissions on the queue...";
+            factory.Password = "...the password...";
+            factory.VirtualHost = "...the virtual host...";
+            factory.HostName = "0-00000000-0000-0000-0000-000000000000.mq.us-east-2.amazonaws.com";
+            factory.Port = 5671;
+            factory.Ssl.Enabled = true;
+            factory.Ssl.ServerName = "0-00000000-0000-0000-0000-000000000000.mq.us-east-2.amazonaws.com";
+        };
+    })
+    ```
 ---
 ## **2<sup>nd</sup> step: Add the Deserialization Middleware**
 ```csharp
 var queueApp = hostBuilder
-        .AddAzureServiceBusListener(/*...*/) // or the provider you want 
-        .UseDeserializedMessageHandler();
+    .AddAzureServiceBusListener(/*...*/) // or the provider you want 
+    .UseDeserializedMessageHandler();// this line adds the deserialization middleware
 ```
 ---
-## **3<sup>rd</sup> step: Provide a Message Handler delegate**
+## **3<sup>rd</sup> step: Provide a Message Handler Delegate**
 
 ### **Scenario 1:** Queue with Single Message Type
 
@@ -37,7 +58,7 @@ public class Dto//we want to deserialize to this type
     //...
 }
 ```
-The parameter passed to the `Use` method must be an async delegate. This async delegate can receive as paramter (order or paramteres does not matter):
+The parameter passed to the `Use` method must be an async delegate. This async delegate can receive as parameter (order of parameters does not matter):
 - Any Dependency registered in the `IServiceCollection` at app startup
     - For Scoped dependencies: a new scope is created for every message that is received
 - A parameter with the `Prop` Attribute
@@ -104,7 +125,7 @@ var queueApp = hostBuilder.AddQueueProcessorHostedService()
 ```
 ---
 ## **Configure a Custom Middleware**
-Middlewares are added by providing an async delegate.
+Middlewares are added by providing an async delegate.  
 After Adding the provider (ServiceBus, Sqs, RabbitMQ), and before calling `UseDeserializedMessageHandler()`, call the `Use` method passing as parameter the async delegate middleware:
 
 ```csharp
@@ -122,3 +143,5 @@ The async delegate middleware can receive as parameters:
 - An `IMessage` parameter which you can use to read the content and headers of the message.
 - A `Func<IMessage, Task>?` which you can use to invoke the next middleware (If this delegate is not invoked the next middleware will not run)
 - A `CancellationToken` that cancels when the Host is stopping.
+
+Middlewares are invoked in the order they are added.
