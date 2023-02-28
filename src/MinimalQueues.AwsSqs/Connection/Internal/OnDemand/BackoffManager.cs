@@ -73,7 +73,7 @@ internal class BackoffManager
             _semaphore!.Release(releaseQuantity);
             _semaphoreReleaseCount += releaseQuantity;
             DisposeTimerNoThreadSafe();
-            if (_semaphoreReleaseCount >= _connection.Configuration.MaxConcurrentCalls)
+            if (_semaphoreReleaseCount >= _connection.Configuration.MaxConcurrency)
             {
                 _semaphore.Release(int.MaxValue - _semaphore.CurrentCount);
                 _semaphore.Dispose();

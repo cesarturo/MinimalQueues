@@ -34,7 +34,7 @@ internal sealed class AwsSqsConnection : IQueueConnection, IDisposable
         _cancellation = new CancellationTokenSource();
         _messageReceiver = Configuration.PrefetchCount is 0 ? new OnDemandMessageReceiver(this)
                                               : new PrefetchMessageReceiver(this);
-        var workerTasks = Enumerable.Range(1, Configuration.MaxConcurrentCalls).Select(i => new Worker(this, _messageReceiver).Start()).ToArray();
+        var workerTasks = Enumerable.Range(1, Configuration.MaxConcurrency).Select(i => new Worker(this, _messageReceiver).Start()).ToArray();
         return Task.CompletedTask;
     }
 
@@ -77,13 +77,13 @@ public sealed class AwsSqsConnectionConfiguration
     public RegionEndpoint? Region { get; set; }
     public AWSCredentials? Credentials { get; set; }
     public string QueueUrl { get; set; }
-    public int WaitTimeSeconds { get; set; }
-    public int VisibilityTimeout { get; set; }
-    public int RenewVisibilityWaitTime { get; set; }
-    
-    public int MaxConcurrentCalls { get; set; }
-    public int PrefetchCount { get; set; }
-    public int RequestMaxNumberOfMessages { get; set; }
+    public int WaitTimeSeconds { get; set; } = 4;
+    public int VisibilityTimeout { get; set; } = 30;
+    public int RenewVisibilityWaitTime { get; set; } = 24;
+
+    public int MaxConcurrency { get; set; } = 1;
+    public int PrefetchCount { get; set; } = 0;
+    public int RequestMaxNumberOfMessages { get; set; } = 10;
     public Func<int, TimeSpan> BackOffFunction { get; set; }
     public Action<Exception> OnError { get; set; }
 

@@ -28,7 +28,7 @@ public static class OptionsBuilderOfQueueProcessorOptionsExtensions
             config.QueueUrl                   = queueUrl;
             config.Credentials                = credentials;
             config.Region                     = region;
-            config.MaxConcurrentCalls         = maxConcurrency;
+            config.MaxConcurrency             = maxConcurrency;
             config.BackOffFunction            = backoffFunction ?? (i => TimeSpan.FromSeconds(2));
             config.WaitTimeSeconds            = waitTimeSeconds;
             config.VisibilityTimeout          = visibilityTimeout;
@@ -47,7 +47,7 @@ public static class OptionsBuilderOfQueueProcessorOptionsExtensions
             {
                 var options               = connectionOptions.Get(builder.Name);
                 sqsClientOptions.QueueUrl = options.QueueUrl;
-                sqsClientOptions.Region   = options.Region.SystemName;
+                sqsClientOptions.Region   = options.Region?.SystemName;
             }));
         return builder.Configure<ISqsClientFactory, IOptionsMonitor<AwsSqsConnectionConfiguration>>(
             (options, sqsClientFactory, connectionConfig) =>

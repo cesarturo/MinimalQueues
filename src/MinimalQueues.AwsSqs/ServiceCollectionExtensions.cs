@@ -40,14 +40,12 @@ public static class ServiceCollectionExtensions
         , Action<AwsSqsConnectionConfiguration, TDependency> configureConnection) where TDependency : class
     {
         var queueProcessorOptions = services.AddQueueProcessorHostedService();
-        queueProcessorOptions.ConfigureAwsSqsListener();//to set defaults
         return queueProcessorOptions.ConfigureAwsSqsListener(configureConnection);
     }
     public static IOptionsBuilder<QueueProcessorOptions> AddAwsSqsListener(this IServiceCollection services
         , Action<AwsSqsConnectionConfiguration, IServiceProvider> configureConnection)
     {
         var queueProcessorOptions = services.AddQueueProcessorHostedService();
-        queueProcessorOptions.ConfigureAwsSqsListener();//to set defaults
         return queueProcessorOptions.ConfigureAwsSqsListener<IServiceProvider>(configureConnection);
     }
 }

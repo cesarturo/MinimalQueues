@@ -39,14 +39,12 @@ public static class HostBuilderExtensions
         , Action<AwsSqsConnectionConfiguration, TDependency> configureConnection) where TDependency : class
     {
         var queueProcessorOptions = hostBuilder.AddQueueProcessorHostedService();
-        queueProcessorOptions.ConfigureAwsSqsListener();//to set defaults
         return queueProcessorOptions.ConfigureAwsSqsListener(configureConnection);
     }
     public static IOptionsBuilder<QueueProcessorOptions> AddAwsSqsListener(this IHostBuilder hostBuilder
         , Action<AwsSqsConnectionConfiguration, IServiceProvider> configureConnection)
     {
         var queueProcessorOptions = hostBuilder.AddQueueProcessorHostedService();
-        queueProcessorOptions.ConfigureAwsSqsListener();//to set defaults
         return queueProcessorOptions.ConfigureAwsSqsListener<IServiceProvider>(configureConnection);
     }
 }
