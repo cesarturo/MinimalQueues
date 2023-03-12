@@ -38,7 +38,12 @@ internal class PrefetchMessageReceiver : IMessageReceiver
             {
                 var countForRequest = await GetCountForRequestGreaterThanTheMinimum(prefetchCount);
                 if (_connectionCancellation.IsCancellationRequested) break;
-                var messages = await WaitUntilAvailableAndGetPrefetchedMessages(countForRequest, prefetchCount);
+                var messages = await GetPrefetchedMessagesOrNull(countForRequest, prefetchCount);
+                if (messages is null)
+                {
+                    await BackoffWait();
+                    continue;
+                }
                 foreach (var message in messages)
                 {
                     await _channelWriter.WriteAsync(message);
@@ -66,22 +71,16 @@ internal class PrefetchMessageReceiver : IMessageReceiver
         }
         return -1;
     }
-    private async Task<IEnumerable<MessageGroup.PrefetchedSqsMessage>> WaitUntilAvailableAndGetPrefetchedMessages(int countForRequest, int prefetchCount)
+    private async Task<IEnumerable<MessageGroup.PrefetchedSqsMessage>?> GetPrefetchedMessagesOrNull(int countForRequest, int prefetchCount)
     {
-        while (true)
+        var messageGroup = new MessageGroup(_connection);
+        var messages = await ReceiveMessages(countForRequest);
+        if (messages is null or { Count: 0 })
         {
-            var messageGroup = new MessageGroup(_connection);
-            var messages = await ReceiveMessages(countForRequest);
-            if (messages is null || messages.Count is 0)
-            {
-                await messageGroup.DisposeAsync();
-                await BackoffWait();
-                countForRequest = prefetchCount - _channelReader.Count;
-                countForRequest = Math.Min(countForRequest, _connection.Configuration.RequestMaxNumberOfMessages);
-                continue;
-            }
-            return messageGroup.Initialize(messages);
+            await messageGroup.DisposeAsync();
+            return null;
         }
+        return messageGroup.Initialize(messages);
     }
 
     private async Task BackoffWait()

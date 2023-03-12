@@ -2,10 +2,10 @@
 
 internal class MessageGroup: IAsyncDisposable
 {
-    private readonly AwsSqsConnection            _connection;
-    private HashSet<MinimalSqsClient.SqsMessage> _messages;
-    private readonly PeriodicTimer               _timer;
-    private readonly Task                        _updateVisibilityTask;
+    private readonly AwsSqsConnection             _connection;
+    private HashSet<MinimalSqsClient.SqsMessage>? _messages;
+    private readonly PeriodicTimer                _timer;
+    private readonly Task                         _updateVisibilityTask;
 
     public MessageGroup(AwsSqsConnection connection)
     {
@@ -29,16 +29,16 @@ internal class MessageGroup: IAsyncDisposable
         {
             await updatevisibilityTask;
             var messages = GetMessages();
-            if (messages.Length is 0) continue;
+            if (messages is null or { Length: 0 }) continue;
             updatevisibilityTask = _connection.UpdateVisibilityBatchAsync(messages);
         }
     }
 
-    private MinimalSqsClient.SqsMessage[] GetMessages()
+    private MinimalSqsClient.SqsMessage[]? GetMessages()
     {
         lock (this)
         {
-            return _messages.ToArray();
+            return _messages?.ToArray();
         }
     }
 
@@ -47,7 +47,7 @@ internal class MessageGroup: IAsyncDisposable
         bool dispose = false;
         lock (this)
         {
-            _messages.Remove(message);
+            _messages!.Remove(message);
             dispose = _messages.Count is 0;
         }
         if (dispose)
