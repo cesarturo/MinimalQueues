@@ -28,17 +28,17 @@ internal class MessageGroup: IAsyncDisposable
         while (await _timer.WaitForNextTickAsync())
         {
             await updatevisibilityTask;
-            var requestEntries = GetRequestsEntries();
-            if (requestEntries.Length is 0) continue;
-            updatevisibilityTask = _connection._sqsClient.ChangeMessageVisibilityBatchAsync(requestEntries, _connection.Configuration.VisibilityTimeout);
+            var messages = GetMessages();
+            if (messages.Length is 0) continue;
+            updatevisibilityTask = _connection.UpdateVisibilityBatchAsync(messages);
         }
     }
 
-    private string[] GetRequestsEntries()
+    private MinimalSqsClient.SqsMessage[] GetMessages()
     {
         lock (this)
         {
-            return _messages.Select(m => m.ReceiptHandle).ToArray(); 
+            return _messages.ToArray();
         }
     }
 

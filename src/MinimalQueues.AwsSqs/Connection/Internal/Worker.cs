@@ -16,25 +16,27 @@ namespace MinimalQueues.AwsSqs.Connection.Internal
         {
             while (!_connection.Cancellation.IsCancellationRequested)
             {
+                SqsMessage? messageToAbandon = null;
                 try
                 {
                     await using var message = await _messageReceiver.ReceiveMessage(_connection.Cancellation);
                     if (message is null) continue;
+                    messageToAbandon = message;
                     using var activity = TryStartActivity(message.InternalMessage);
                     await _connection.ProcessMessageAsync(message);
-                    await _connection.DeleteMessage(message);
+                    await _connection.DeleteMessageAsync(message);
                     activity?.Stop();
                 }
                 catch (Exception exception)
                 {
-                    _connection.Configuration.OnError?.Invoke(exception);
+                    await SafeAbandonMessage(messageToAbandon);
+                    SafeInvokeOnError(exception);
                 }
             }
         }
-
         public Activity? TryStartActivity(MinimalSqsClient.SqsMessage message)
         {
-            if (message.MessageAttributes.TryGetValue("Diagnostic-Id", out string parentId))
+            if (message.MessageAttributes.TryGetValue("Diagnostic-Id", out string? parentId))
             {
                 var activity = new Activity("AwsSqs");
                 activity.SetParentId(parentId);
@@ -43,5 +45,32 @@ namespace MinimalQueues.AwsSqs.Connection.Internal
             }
             return null;
         }
+
+        private async Task SafeAbandonMessage(SqsMessage? messageToAbandon)
+        {
+            if (messageToAbandon is null) return;
+            try
+            {
+                await _connection.AbandonMessageAsync(messageToAbandon);
+            }
+            catch
+            {
+                // ignored
+            }
+        }
+
+        private void SafeInvokeOnError(Exception exception)
+        {
+            try
+            {
+                _connection.Configuration.OnError?.Invoke(exception);
+            }
+            catch
+            {
+                // ignored
+            }
+        }
+
+        
     }
 }

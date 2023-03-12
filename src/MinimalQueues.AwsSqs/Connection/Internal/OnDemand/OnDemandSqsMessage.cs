@@ -20,7 +20,7 @@ internal sealed class OnDemandSqsMessage : SqsMessage
         {
             await updatevisibilityTask;
             if (InternalMessage is null) continue;
-            updatevisibilityTask = _connection.UpdateVisibility(InternalMessage);
+            updatevisibilityTask = _connection.UpdateVisibilityAsync(InternalMessage);
         }
     }
     public override BinaryData GetBody() => new BinaryData(InternalMessage.Body);

@@ -54,14 +54,25 @@ internal sealed class AwsSqsConnection : IQueueConnection, IDisposable
     {
         return _processMessageAsync(message, Cancellation);
     }
-    internal Task DeleteMessage(SqsMessage message)
+    internal Task DeleteMessageAsync(SqsMessage message)
     {
         return _sqsClient.DeleteMessageAsync(message.InternalMessage.ReceiptHandle);
     }
 
-    internal Task UpdateVisibility(MinimalSqsClient.SqsMessage message)
+    internal Task UpdateVisibilityAsync(MinimalSqsClient.SqsMessage message)
     {
         return _sqsClient.ChangeMessageVisibilityAsync(message.ReceiptHandle, Configuration.VisibilityTimeout);
+    }
+
+    internal Task UpdateVisibilityBatchAsync(MinimalSqsClient.SqsMessage[] requestEntries)
+    {
+        var receiptHandles = requestEntries.Select(m => m.ReceiptHandle).ToArray();
+        return _sqsClient.ChangeMessageVisibilityBatchAsync(receiptHandles, Configuration.VisibilityTimeout);
+    }
+
+    internal Task AbandonMessageAsync(SqsMessage message)
+    {
+        return _sqsClient.ChangeMessageVisibilityAsync(message.InternalMessage.ReceiptHandle, 0);
     }
 
 

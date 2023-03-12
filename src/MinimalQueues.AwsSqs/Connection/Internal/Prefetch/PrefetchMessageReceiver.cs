@@ -18,7 +18,6 @@ internal class PrefetchMessageReceiver : IMessageReceiver
         _connection = connection;
         _connectionCancellation = connection.Cancellation;
         _sqsClient = connection._sqsClient;
-        var allAttributes = new List<string>(new[] { "All" });
         var channel = Channel.CreateBounded<SqsMessage>(new BoundedChannelOptions(_connection.Configuration.PrefetchCount)
         {
             FullMode = BoundedChannelFullMode.Wait,
@@ -39,7 +38,7 @@ internal class PrefetchMessageReceiver : IMessageReceiver
             {
                 var countForRequest = await GetCountForRequestGreaterThanTheMinimum(prefetchCount);
                 if (_connectionCancellation.IsCancellationRequested) break;
-                var messages = await WaitUntilAvailableAndGetMessageContexts(countForRequest, prefetchCount);
+                var messages = await WaitUntilAvailableAndGetPrefetchedMessages(countForRequest, prefetchCount);
                 foreach (var message in messages)
                 {
                     await _channelWriter.WriteAsync(message);
@@ -67,7 +66,7 @@ internal class PrefetchMessageReceiver : IMessageReceiver
         }
         return -1;
     }
-    private async Task<IEnumerable<MessageGroup.PrefetchedSqsMessage>> WaitUntilAvailableAndGetMessageContexts(int countForRequest, int prefetchCount)
+    private async Task<IEnumerable<MessageGroup.PrefetchedSqsMessage>> WaitUntilAvailableAndGetPrefetchedMessages(int countForRequest, int prefetchCount)
     {
         while (true)
         {
