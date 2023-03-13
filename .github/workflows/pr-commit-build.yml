@@ -1,0 +1,27 @@
+name: Build
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Check build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Install dependencies
+        run: dotnet restore
+        working-directory: ./src
+
+      - name: Build solution
+        run: dotnet build --no-restore
+        working-directory: ./src
