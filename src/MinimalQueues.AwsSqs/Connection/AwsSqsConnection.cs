@@ -1,6 +1,4 @@
-﻿using Amazon;
-using Amazon.Runtime;
-using MinimalQueues.AwsSqs.Connection.Internal;
+﻿using MinimalQueues.AwsSqs.Connection.Internal;
 using MinimalQueues.AwsSqs.Connection.Internal.OnDemand;
 using MinimalQueues.AwsSqs.Connection.Internal.Prefetch;
 using MinimalQueues.Core;
@@ -47,7 +45,7 @@ internal sealed class AwsSqsConnection : IQueueConnection, IDisposable
     }
     private void SetDefaults()
     {
-        Configuration.BackOffFunction ??= i => TimeSpan.FromSeconds(2);
+        Configuration.BackOffFunction ??= _ => TimeSpan.FromSeconds(2);
     }
 
     internal Task ProcessMessageAsync(SqsMessage message)
@@ -81,21 +79,4 @@ internal sealed class AwsSqsConnection : IQueueConnection, IDisposable
         _cancellation?.Cancel();
         _messageReceiver.Dispose();
     }
-}
-
-public sealed class AwsSqsConnectionConfiguration
-{
-    public RegionEndpoint? Region { get; set; }
-    public AWSCredentials? Credentials { get; set; }
-    public string QueueUrl { get; set; }
-    public int WaitTimeSeconds { get; set; } = 4;
-    public int VisibilityTimeout { get; set; } = 30;
-    public int RenewVisibilityWaitTime { get; set; } = 24;
-
-    public int MaxConcurrency { get; set; } = 1;
-    public int PrefetchCount { get; set; } = 0;
-    public int RequestMaxNumberOfMessages { get; set; } = 10;
-    public Func<int, TimeSpan> BackOffFunction { get; set; }
-    public Action<Exception> OnError { get; set; }
-
 }

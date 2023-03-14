@@ -15,7 +15,7 @@ public static class AzureOptionsBuilderOfQueueProcessorOptionsExtensions
         , TokenCredential? credential = null
         , ServiceBusClientOptions? serviceBusClientOptions = null
         , ServiceBusProcessorOptions? serviceBusProcessorOptions = null
-        , Func<ProcessErrorEventArgs, Task> onError = null)
+        , Func<ProcessErrorEventArgs, Task>? onError = null)
     {
         return builder.Configure(options =>
         {
@@ -31,10 +31,10 @@ public static class AzureOptionsBuilderOfQueueProcessorOptionsExtensions
     }
     public static IOptionsBuilder<QueueProcessorOptions> ConfigureAzureServiceBusListener(this IOptionsBuilder<QueueProcessorOptions> builder
         , string connectionString
-        , string entityPath
+        , string? entityPath
         , ServiceBusClientOptions? serviceBusClientOptions = null
         , ServiceBusProcessorOptions? serviceBusProcessorOptions = null
-        , Func<ProcessErrorEventArgs, Task> onError = null)
+        , Func<ProcessErrorEventArgs, Task>? onError = null)
     {
         return builder.Configure(options =>
         {

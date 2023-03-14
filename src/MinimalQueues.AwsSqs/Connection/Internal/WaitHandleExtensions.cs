@@ -10,11 +10,11 @@ internal static class WaitHandleExtensions
         var taskCompletionSource = new TaskCompletionSource();
 
         var waitHandleRegistration = ThreadPool.RegisterWaitForSingleObject(waitHandle
-            , (state, timedOut) => ((TaskCompletionSource)state).TrySetResult()
+            , (state, timedOut) => ((TaskCompletionSource)state!).TrySetResult()
             , taskCompletionSource
             , Timeout.InfiniteTimeSpan, executeOnlyOnce: true);
 
-        var cancellationRegistration = cancellation?.Register(state => ((TaskCompletionSource)state).TrySetCanceled()
+        var cancellationRegistration = cancellation?.Register(state => ((TaskCompletionSource)state!).TrySetCanceled()
             , taskCompletionSource
             , useSynchronizationContext: false);
 

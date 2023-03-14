@@ -51,7 +51,7 @@ internal class PrefetchMessageReceiver : IMessageReceiver
                 _backoffCount = 0;
             }
         }
-        catch (ChannelClosedException exception)
+        catch (ChannelClosedException)
         {
             
         }
@@ -85,7 +85,7 @@ internal class PrefetchMessageReceiver : IMessageReceiver
 
     private async Task BackoffWait()
     {
-        var backoffTime = _connection.Configuration.BackOffFunction(++_backoffCount);
+        var backoffTime = _connection.Configuration.BackOffFunction!(++_backoffCount);
         using var timer = new PeriodicTimer(backoffTime);
         await timer.WaitForNextTickAsync(_connectionCancellation);
     }

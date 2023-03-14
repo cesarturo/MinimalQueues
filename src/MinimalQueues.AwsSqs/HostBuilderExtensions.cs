@@ -20,7 +20,7 @@ public static class HostBuilderExtensions
         , int renewVisibilityTime = 24
         , int prefetchCount = 0
         , int requestMaxNumberOfMessages = 10
-        , Action<Exception> onError = null)
+        , Action<Exception>? onError = null)
     {
         var queueProcessorOptions = hostBuilder.AddQueueProcessorHostedService();
         return queueProcessorOptions.ConfigureAwsSqsListener(queueUrl

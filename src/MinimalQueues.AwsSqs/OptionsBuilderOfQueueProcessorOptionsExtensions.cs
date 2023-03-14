@@ -29,7 +29,7 @@ public static class OptionsBuilderOfQueueProcessorOptionsExtensions
             config.Credentials                = credentials;
             config.Region                     = region;
             config.MaxConcurrency             = maxConcurrency;
-            config.BackOffFunction            = backoffFunction ?? (i => TimeSpan.FromSeconds(2));
+            config.BackOffFunction            = backoffFunction;
             config.WaitTimeSeconds            = waitTimeSeconds;
             config.VisibilityTimeout          = visibilityTimeout;
             config.RenewVisibilityWaitTime    = renewVisibilityTime;
@@ -46,6 +46,7 @@ public static class OptionsBuilderOfQueueProcessorOptionsExtensions
             services.AddSqsClient(builder.Name).Configure<IOptionsMonitor<AwsSqsConnectionConfiguration>>((sqsClientOptions, connectionOptions) =>
             {
                 var options               = connectionOptions.Get(builder.Name);
+                if (options.QueueUrl is null) throw new Exception("QueueUrl was not provided.");
                 sqsClientOptions.QueueUrl = options.QueueUrl;
                 sqsClientOptions.Region   = options.Region?.SystemName;
             }));

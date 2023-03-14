@@ -32,7 +32,7 @@ internal sealed class MessageProcessor
     public async Task<Stream> FunctionHandler(Stream stream, ILambdaContext context)
     {
         var sqsEvent = JsonSerializer.Deserialize<SQSEvent>(stream, _inputSerializerOptions);
-        var messageIdOfErrors = await ProcessMessages(sqsEvent);
+        var messageIdOfErrors = await ProcessMessages(sqsEvent!);
         return ResponseStreamBuilder.Build(messageIdOfErrors);
     }
 

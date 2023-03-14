@@ -8,7 +8,7 @@ internal class BackoffManager
     private volatile PeriodicTimer?   _timer;
     private volatile Status           _status;
     private int                       _semaphoreReleaseCount;
-    private Task                      _timerWaitTask;
+    private Task?                     _timerWaitTask;
     
     public BackoffManager(AwsSqsConnection connection)
     {
@@ -40,7 +40,7 @@ internal class BackoffManager
         {
             return new ValueTask(_semaphore!.WaitAsync(_connection.Cancellation));
         }
-        catch (NullReferenceException exception)
+        catch (NullReferenceException)
         {
             return ValueTask.CompletedTask;
         }
@@ -52,7 +52,7 @@ internal class BackoffManager
         lock (this)
         {
             if (_status is Status.Waiting) return;
-            var waitTime = _connection.Configuration.BackOffFunction(++_backoffCount);
+            var waitTime = _connection.Configuration.BackOffFunction!(++_backoffCount);
             DisposeTimerNoThreadSafe();
             _semaphore ??= new SemaphoreSlim(0);
             _semaphoreReleaseCount = 0;

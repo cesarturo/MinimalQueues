@@ -1,4 +1,5 @@
-﻿using MinimalQueues.Core;
+﻿using System.Diagnostics.CodeAnalysis;
+using MinimalQueues.Core;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -9,12 +10,13 @@ internal sealed class RabbitMQConnection : IQueueConnection, IRabbitMQConnection
     #pragma warning disable CS8618
     private Func<IMessage, CancellationToken, Task> _processMessageAsync;
     #pragma warning restore CS8618
-    private IConnection _connection;
-    private IModel _channel;
-    public string QueueName { get; set; }
-    public Action<ConnectionFactory> ConfigureConnectionFactory { get; set; }
+    private IConnection? _connection;
+    private IModel? _channel;
+    public string? QueueName { get; set; }
+    public Action<ConnectionFactory>? ConfigureConnectionFactory { get; set; }
     public Task Start(Func<IMessage, CancellationToken, Task> processMessageDelegate, CancellationToken cancellationToken)
     {
+        Validate();
         _processMessageAsync = processMessageDelegate;
         var connectionFactory = new ConnectionFactory();
         ConfigureConnectionFactory(connectionFactory);
@@ -31,7 +33,7 @@ internal sealed class RabbitMQConnection : IQueueConnection, IRabbitMQConnection
             {
                 await _processMessageAsync(new RabbitMQMessage(ea), cancellationToken);
             }
-            catch (Exception exception)
+            catch (Exception)
             {
                 _channel.BasicNack(ea.DeliveryTag, false, true);
             }
@@ -43,11 +45,26 @@ internal sealed class RabbitMQConnection : IQueueConnection, IRabbitMQConnection
         _channel.BasicConsume(QueueName, false, consumer);
         return Task.CompletedTask;
     }
+    [MemberNotNull(nameof(QueueName), nameof(ConfigureConnectionFactory))]
+    private void Validate()
+    {
+        if (QueueName is null)
+            throw new Exception($"{nameof(QueueName)} was not provided.");
+
+        if (ConfigureConnectionFactory is null)
+            throw new Exception($"{ConfigureConnectionFactory} delegate was not provided.");
+    }
+
     public void Dispose()
     {
-        ExecuteIgnoringException(_channel.Close);
-        ExecuteIgnoringException(_connection.Close);
-        ExecuteIgnoringException(_connection.Dispose);
+        if (_channel != null) 
+            ExecuteIgnoringException(_channel.Close);
+        if (_connection != null)
+        {
+            ExecuteIgnoringException(_connection.Close);
+            ExecuteIgnoringException(_connection.Dispose);
+        }
+
         void ExecuteIgnoringException(Action action)
         {
             try { action(); } catch { }
@@ -60,6 +77,6 @@ internal sealed class RabbitMQConnection : IQueueConnection, IRabbitMQConnection
 
 public interface IRabbitMQConnectionConfiguration
 {
-    public string QueueName { get; set; }
-    public Action<ConnectionFactory> ConfigureConnectionFactory { get; set; }
+    public string? QueueName { get; set; }
+    public Action<ConnectionFactory>? ConfigureConnectionFactory { get; set; }
 }

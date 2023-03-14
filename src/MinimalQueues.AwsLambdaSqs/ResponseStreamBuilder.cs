@@ -22,14 +22,14 @@ internal static class ResponseStreamBuilder
                 writer.WritePropertyName("batchItemFailures");
                 writer.WriteStartArray();
             }
-            writer.WriteStartObject();
+            writer!.WriteStartObject();
             writer.WriteString("itemIdentifier", result);
             writer.WriteEndObject();
         }
 
         if (stream is null) return new MemoryStream();
 
-        writer.WriteEndArray();
+        writer!.WriteEndArray();
         writer.WriteEndObject();
         writer.Dispose();
         stream.Position = 0;
