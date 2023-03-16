@@ -1,0 +1,73 @@
+name: Create release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        type: string
+        description: The version to release
+        required: true
+    secrets:
+      NUGET_API_KEY:
+        required: true
+
+jobs:
+  bap-mq-core:
+    name: Build and Publish MinimalQueues.Core project
+    uses: ./.github/workflows/_reusable_nuget_publish.yml
+    with:
+      version: ${{ inputs.version }}
+      dotnet_version: 6.0.x
+      sln_path: ./src
+      csproj_path: ./src/MinimalQueues.Core
+    secrets: inherit
+
+  bap-mq:
+    name: Build and Publish MinimalQueues project
+    uses: ./.github/workflows/_reusable_nuget_publish.yml
+    with:
+      version: ${{ inputs.version }}
+      dotnet_version: 6.0.x
+      sln_path: ./src
+      csproj_path: ./src/MinimalQueues
+    secrets: inherit
+
+  bap-mq-aws-lambda-sqs:
+    name: Build and Publish MinimalQueues.AwsLambaSqs project
+    uses: ./.github/workflows/_reusable_nuget_publish.yml
+    with:
+      version: ${{ inputs.version }}
+      dotnet_version: 6.0.x
+      sln_path: ./src
+      csproj_path: ./src/MinimalQueues.AwsLambdaSqs
+    secrets: inherit
+
+  bap-mq-aws-sqs:
+    name: Build and Publish MinimalQueues.AwsSqs project
+    uses: ./.github/workflows/_reusable_nuget_publish.yml
+    with:
+      version: ${{ inputs.version }}
+      dotnet_version: 6.0.x
+      sln_path: ./src
+      csproj_path: ./src/MinimalQueues.AwsSqs
+    secrets: inherit
+
+  bap-mq-azure:
+    name: Build and Publish MinimalQueues.AzureServiceBus project
+    uses: ./.github/workflows/_reusable_nuget_publish.yml
+    with:
+      version: ${{ inputs.version }}
+      dotnet_version: 6.0.x
+      sln_path: ./src
+      csproj_path: ./src/MinimalQueues.AzureServiceBus
+    secrets: inherit
+
+  bap-mq-rabbitmq:
+    name: Build and Publish MinimalQueues.RabbitMQ project
+    uses: ./.github/workflows/_reusable_nuget_publish.yml
+    with:
+      version: ${{ inputs.version }}
+      dotnet_version: 6.0.x
+      sln_path: ./src
+      csproj_path: ./src/MinimalQueues.RabbitMQ
+    secrets: inherit
