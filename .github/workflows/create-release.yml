@@ -46,4 +46,4 @@ jobs:
 
       - name: Nuget Push MinimalQueues.Core
         run: dotnet nuget push MinimalQueues.Core.${{ inputs.version }}.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
-        working-directory: ./packages
+        working-directory: packages
