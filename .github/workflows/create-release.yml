@@ -3,9 +3,9 @@ name: Create release
 on:
   workflow_dispatch:
     inputs:
-      version_suffix:
+      version:
         type: string
-        description: The version suffix to release
+        description: The version to release
         required: true
     secrets:
       GITHUB_TOKEN:
@@ -33,13 +33,17 @@ jobs:
         working-directory: ./src
 
       - name: Build solution
-        run: dotnet build --configuration Release --framework net6.0 --version-suffix ${{ inputs.version_suffix }}
+        run: dotnet build --configuration Release --framework net6.0 /property:Version=${{ inputs.version }}
         working-directory: ./src
 
       - name: Publish MinimalQueues.Core
-        run: dotnet publish --configuration Release --framework net6.0 --no-build --no-restore --version-suffix ${{ inputs.version_suffix }}
+        run: dotnet publish --configuration Release --framework net6.0 --no-build --no-restore /property:Version=${{ inputs.version }}
         working-directory: ./src/MinimalQueues.Core
 
       - name: Nuget Pack MinimalQueues.Core
-        run: dotnet pack --configuration Release --no-restore --no-build --version-suffix ${{ inputs.version_suffix }}
+        run: dotnet pack --configuration Release --no-restore --no-build /property:Version=${{ inputs.version }} --output packages
         working-directory: ./src/MinimalQueues.Core
+
+      - name: Nuget Push MinimalQueues.Core
+        run: dotnet nuget push MinimalQueues.Core.${{ inputs.version }}.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
+        working-directory: ./packages
