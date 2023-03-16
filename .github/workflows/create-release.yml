@@ -3,9 +3,9 @@ name: Create release
 on:
   workflow_dispatch:
     inputs:
-      new_version:
+      version_suffix:
         type: string
-        description: The next version to release (SemVer without prefix)
+        description: The version suffix to release
         required: true
     secrets:
       GITHUB_TOKEN:
@@ -14,7 +14,7 @@ on:
         required: true
 
 jobs:
-  create-release:
+  build:
     name: Create release
     runs-on: ubuntu-latest
 
@@ -33,5 +33,15 @@ jobs:
         working-directory: ./src
 
       - name: Build solution
-        run: dotnet build --no-restore
+        run: dotnet build --no-restore --configuration Release
         working-directory: ./src
+
+      - name: Publish MinimalQueues.Core
+        run: dotnet publish --configuration Release --framework net6.0 --no-build --no-restore
+        working-directory: ./src/MinimalQueues.Core
+
+      - name: Nuget Pack MinimalQueues.Core
+        run: dotnet pack --configuration Release --framework net6.0 --no-restore --no-build --version-suffix ${{ inputs.version_suffix }}
+        working-directory: ./src/MinimalQueues.Core
+
+      
