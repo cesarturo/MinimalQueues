@@ -41,7 +41,7 @@ jobs:
         working-directory: ./src/MinimalQueues.Core
 
       - name: Nuget Pack MinimalQueues.Core
-        run: dotnet pack --configuration Release --framework net6.0 --no-restore --no-build --version-suffix ${{ inputs.version_suffix }}
+        run: dotnet pack --configuration Release --no-restore --no-build --version-suffix ${{ inputs.version_suffix }}
         working-directory: ./src/MinimalQueues.Core
 
       
