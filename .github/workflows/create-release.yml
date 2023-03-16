@@ -29,11 +29,11 @@ jobs:
           dotnet-version: 6.0.x
       
       - name: Install dependencies
-        run: dotnet restore
+        run: dotnet restore --configuration Release
         working-directory: ./src
 
       - name: Build solution
-        run: dotnet build --no-restore --configuration Release
+        run: dotnet build --configuration Release --framework net6.0
         working-directory: ./src
 
       - name: Publish MinimalQueues.Core
