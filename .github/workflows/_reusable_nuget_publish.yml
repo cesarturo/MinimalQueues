@@ -1,0 +1,56 @@
+name: REUSABLE - Build and Publish to Nuget
+on:
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        required: true
+      dotnet_version:
+        type: string
+        required: true
+        default: 6.0.x
+      sln_path:
+        type: string
+        required: true
+      csproj_path:
+        type: string
+        required: true
+    secrets:
+      GITHUB_TOKEN:
+        required: true
+      NUGET_API_KEY:
+        required: true
+
+jobs:
+  build-and-publish:
+    name: Build and publish project
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ inputs.dotnet_version }}
+
+      - name: Install dependencies
+        run: dotnet restore
+        working-directory: ${{ inputs.sln_path }}
+      
+      - name: Build solution
+        run: dotnet build --configuration Release --framework net6.0 /property:Version=${{ inputs.version }}
+        working-directory: ${{ inputs.sln_path }}
+
+      - name: Publish CSharp Project
+        run: dotnet publish --configuration Release --framework net6.0 --no-build --no-restore /property:Version=${{ inputs.version }}
+        working-directory: ${{ inputs.csproj_path }}
+
+      - name: Nuget Pack CSharp Project
+        run: dotnet pack --configuration Release --no-restore --no-build /property:Version=${{ inputs.version }}
+        working-directory: ${{ inputs.csproj_path }}
+
+      - name: Nuget Push CSharp Project
+        run: dotnet nuget push **/*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
+        working-directory: ${{ inputs.csproj_path }}
