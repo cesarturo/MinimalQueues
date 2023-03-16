@@ -33,15 +33,13 @@ jobs:
         working-directory: ./src
 
       - name: Build solution
-        run: dotnet build --configuration Release --framework net6.0
+        run: dotnet build --configuration Release --framework net6.0 --version-suffix ${{ inputs.version_suffix }}
         working-directory: ./src
 
       - name: Publish MinimalQueues.Core
-        run: dotnet publish --configuration Release --framework net6.0 --no-build --no-restore
+        run: dotnet publish --configuration Release --framework net6.0 --no-build --no-restore --version-suffix ${{ inputs.version_suffix }}
         working-directory: ./src/MinimalQueues.Core
 
       - name: Nuget Pack MinimalQueues.Core
         run: dotnet pack --configuration Release --no-restore --no-build --version-suffix ${{ inputs.version_suffix }}
         working-directory: ./src/MinimalQueues.Core
-
-      
