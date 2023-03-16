@@ -8,8 +8,6 @@ on:
         description: The version to release
         required: true
     secrets:
-      GITHUB_TOKEN:
-        required: true
       NUGET_API_KEY:
         required: true
 
