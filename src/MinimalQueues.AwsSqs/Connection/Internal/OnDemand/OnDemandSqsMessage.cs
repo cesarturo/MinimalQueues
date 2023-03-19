@@ -1,4 +1,6 @@
-﻿namespace MinimalQueues.AwsSqs.Connection.Internal.OnDemand;
+﻿using System.Threading.Tasks.Sources;
+
+namespace MinimalQueues.AwsSqs.Connection.Internal.OnDemand;
 
 internal sealed class OnDemandSqsMessage : SqsMessage
 {
@@ -25,7 +27,6 @@ internal sealed class OnDemandSqsMessage : SqsMessage
     }
     public override BinaryData GetBody() => new BinaryData(InternalMessage.Body);
 
-
     public override ValueTask DisposeAsync()
     {
         _timer.Dispose();
@@ -34,3 +35,4 @@ internal sealed class OnDemandSqsMessage : SqsMessage
         return new ValueTask(_updateVisibilityTask);
     }
 }
+
