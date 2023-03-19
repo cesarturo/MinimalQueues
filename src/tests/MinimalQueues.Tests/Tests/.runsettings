@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<RunSettings>
+  <!--this file needs to be set for Resharper test runner to work (in Resharper->Options->Tools->Unit testing)-->
+  <!--<TestRunParameters>
+    <Parameter name="QueueUrl" value="https://sqs.us-east-2.amazonaws.com/025381531841/cztestqueue1" />
+  </TestRunParameters>-->
+
+  <RunConfiguration>
+    <EnvironmentVariables>
+      <QUEUE_URL>https://sqs.us-east-2.amazonaws.com/025381531841/cztestqueue1</QUEUE_URL>
+    </EnvironmentVariables>
+  </RunConfiguration>
+</RunSettings>

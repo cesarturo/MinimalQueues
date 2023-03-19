@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <RunSettingsFilePath>$(MSBuildProjectDirectory)\.runsettings</RunSettingsFilePath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove=".runsettings" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include=".runsettings">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0-preview.1.23110.8" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
+    <PackageReference Include="MinimalSqsClient" Version="1.0.3" />
+    <PackageReference Include="NUnit" Version="3.13.3" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
+    <PackageReference Include="NUnit.Analyzers" Version="3.3.0" />
+    <PackageReference Include="coverlet.collector" Version="3.1.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\MinimalQueues.AwsSqs\MinimalQueues.AwsSqs.csproj" />
+    <ProjectReference Include="..\..\..\MinimalQueues.AzureServiceBus\MinimalQueues.AzureServiceBus.csproj" />
+    <ProjectReference Include="..\..\..\MinimalQueues.RabbitMQ\MinimalQueues.RabbitMQ.csproj" />
+    <ProjectReference Include="..\..\..\MinimalQueues\MinimalQueues.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,61 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33205.214
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MinimalQueues.Core", "..\..\MinimalQueues.Core\MinimalQueues.Core.csproj", "{FDDA1606-B14C-45F6-8B1A-E082A4D54C66}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MinimalQueues", "..\..\MinimalQueues\MinimalQueues.csproj", "{346A011E-912D-4000-BFF8-76485D21FF15}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MinimalQueues.AzureServiceBus", "..\..\MinimalQueues.AzureServiceBus\MinimalQueues.AzureServiceBus.csproj", "{A2D52F8D-BFD0-418B-A248-421854413C95}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MinimalQueues.AwsSqs", "..\..\MinimalQueues.AwsSqs\MinimalQueues.AwsSqs.csproj", "{AB2E791D-BD12-430A-864D-B49784392505}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MinimalQueues.RabbitMQ", "..\..\MinimalQueues.RabbitMQ\MinimalQueues.RabbitMQ.csproj", "{9706A154-F98D-4968-9C87-3935E152F2D2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MinimalQueues.AwsLambdaSqs", "..\..\MinimalQueues.AwsLambdaSqs\MinimalQueues.AwsLambdaSqs.csproj", "{FD794744-7ABB-4017-AB57-39FF84293722}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{966AB2AA-DB45-4D9D-8B71-4F1DACD73AE0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FDDA1606-B14C-45F6-8B1A-E082A4D54C66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDDA1606-B14C-45F6-8B1A-E082A4D54C66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDDA1606-B14C-45F6-8B1A-E082A4D54C66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDDA1606-B14C-45F6-8B1A-E082A4D54C66}.Release|Any CPU.Build.0 = Release|Any CPU
+		{346A011E-912D-4000-BFF8-76485D21FF15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{346A011E-912D-4000-BFF8-76485D21FF15}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{346A011E-912D-4000-BFF8-76485D21FF15}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{346A011E-912D-4000-BFF8-76485D21FF15}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A2D52F8D-BFD0-418B-A248-421854413C95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2D52F8D-BFD0-418B-A248-421854413C95}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2D52F8D-BFD0-418B-A248-421854413C95}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2D52F8D-BFD0-418B-A248-421854413C95}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AB2E791D-BD12-430A-864D-B49784392505}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB2E791D-BD12-430A-864D-B49784392505}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB2E791D-BD12-430A-864D-B49784392505}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB2E791D-BD12-430A-864D-B49784392505}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9706A154-F98D-4968-9C87-3935E152F2D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9706A154-F98D-4968-9C87-3935E152F2D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9706A154-F98D-4968-9C87-3935E152F2D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9706A154-F98D-4968-9C87-3935E152F2D2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD794744-7ABB-4017-AB57-39FF84293722}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD794744-7ABB-4017-AB57-39FF84293722}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD794744-7ABB-4017-AB57-39FF84293722}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD794744-7ABB-4017-AB57-39FF84293722}.Release|Any CPU.Build.0 = Release|Any CPU
+		{966AB2AA-DB45-4D9D-8B71-4F1DACD73AE0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{966AB2AA-DB45-4D9D-8B71-4F1DACD73AE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{966AB2AA-DB45-4D9D-8B71-4F1DACD73AE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{966AB2AA-DB45-4D9D-8B71-4F1DACD73AE0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {92EC7BAE-1AAE-4955-8721-14FE9DC5E611}
+	EndGlobalSection
+EndGlobal
