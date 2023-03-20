@@ -1,12 +1,13 @@
-﻿using System.Diagnostics;
+﻿#if NET5_0
+using System.Diagnostics;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks.Sources;
 
 namespace MinimalQueues.AwsSqs;
 
-#if NET5_0
+
 public sealed class PeriodicTimer : IDisposable
-{
+{//this class is basically a copy of .net 6 PeriodicTimer
     internal const uint MaxSupportedTimeout = 0xfffffffe;
 
     /// <summary>The underlying timer.</summary>
@@ -27,7 +28,7 @@ public sealed class PeriodicTimer : IDisposable
         }
 
         _state = new State();
-        _timer = new Timer(s => ((State)s!).Signal(), _state, TimeSpan.Zero, period);
+        _timer = new Timer(s => ((State)s!).Signal(), _state, period, period);
     }
 
     /// <summary>Wait for the next tick of the timer, or for the timer to be stopped.</summary>
@@ -133,7 +134,7 @@ public sealed class PeriodicTimer : IDisposable
         }
 
         /// <summary>Signal that the timer has either fired or been stopped.</summary>
-        public void Signal(bool stopping = false, CancellationToken cancellationToken = default)
+        public void Signal(bool stopping = false)
         {
             bool completeTask = false;
 
@@ -149,14 +150,14 @@ public sealed class PeriodicTimer : IDisposable
 
             if (completeTask)
             {
-                if (cancellationToken.IsCancellationRequested)
+                if (_ctr.Token.IsCancellationRequested)
                 {
                     // If cancellation is requested just before the UnsafeRegister call, it's possible this will end up being invoked
                     // as part of the WaitForNextTickAsync call and thus as part of holding the lock.  The goal of completeTask
                     // was to escape that lock, so that we don't invoke any synchronous continuations from the ValueTask as part
                     // of completing _mrvtsc.  However, in that case, we also haven't returned the ValueTask to the caller, so there
                     // won't be any continuations yet, which makes this safe.
-                    _mrvtsc.SetException(ExceptionDispatchInfo.SetCurrentStackTrace(new OperationCanceledException(cancellationToken)));
+                    _mrvtsc.SetException(ExceptionDispatchInfo.SetCurrentStackTrace(new OperationCanceledException(_ctr.Token)));
                 }
                 else
                 {
