@@ -40,7 +40,7 @@ internal sealed class OnDemandMessageReceiver : IMessageReceiver
             }
             return new OnDemandSqsMessage(message, _connection, renewTimer);
         }
-        catch (TaskCanceledException)
+        catch (OperationCanceledException)
         {
             renewTimer.Dispose();
             return null;

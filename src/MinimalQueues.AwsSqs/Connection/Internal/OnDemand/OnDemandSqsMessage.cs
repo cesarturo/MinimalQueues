@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks.Sources;
-
-namespace MinimalQueues.AwsSqs.Connection.Internal.OnDemand;
+﻿namespace MinimalQueues.AwsSqs.Connection.Internal.OnDemand;
 
 internal sealed class OnDemandSqsMessage : SqsMessage
 {
@@ -18,11 +16,22 @@ internal sealed class OnDemandSqsMessage : SqsMessage
     private async Task UpdateVisibility()
     {
         var updatevisibilityTask = Task.CompletedTask;
-        while (await _timer.WaitForNextTickAsync())
+        try
         {
-            await updatevisibilityTask;
-            if (InternalMessage is null) continue;
-            updatevisibilityTask = _connection.UpdateVisibilityAsync(InternalMessage);
+            while (await _timer.WaitForNextTickAsync(_connection.Cancellation))
+            {
+                await updatevisibilityTask;
+                if (InternalMessage is null) continue;
+                updatevisibilityTask = _connection.UpdateVisibilityAsync(InternalMessage);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+
+        }
+        catch (Exception exception)
+        {
+            _connection.Configuration.OnError?.Invoke(exception);
         }
     }
     public override BinaryData GetBody() => new BinaryData(InternalMessage.Body);
@@ -30,7 +39,7 @@ internal sealed class OnDemandSqsMessage : SqsMessage
     public override ValueTask DisposeAsync()
     {
         _timer.Dispose();
-        if (_updateVisibilityTask.IsCompletedSuccessfully)
+        if (_updateVisibilityTask.IsCompleted)
             return ValueTask.CompletedTask;
         return new ValueTask(_updateVisibilityTask);
     }
