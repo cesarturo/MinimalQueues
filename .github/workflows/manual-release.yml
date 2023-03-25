@@ -7,6 +7,16 @@ on:
         type: string
         description: The version to release
         required: true
+      project:
+        type: choice
+        description: Project to publish
+        options:
+          - MinimalQueues.Core
+          - MinimalQueues
+          - MinimalQueues.AwsLambaSqs
+          - MinimalQueues.AwsSqs
+          - MinimalQueues.AzureServiceBus
+          - MinimalQueues.RabbitMQ
     secrets:
       NUGET_API_KEY:
         required: true
@@ -14,6 +24,7 @@ on:
 jobs:
   bap-mq-core:
     name: Build and Publish MinimalQueues.Core project
+    if: ${{ inputs.project }} == 'MinimalQueues.Core'
     uses: ./.github/workflows/_reusable_nuget_publish.yml
     with:
       version: ${{ inputs.version }}
@@ -24,6 +35,7 @@ jobs:
 
   bap-mq:
     name: Build and Publish MinimalQueues project
+    if: ${{ inputs.project }} == 'MinimalQueues'
     uses: ./.github/workflows/_reusable_nuget_publish.yml
     with:
       version: ${{ inputs.version }}
@@ -34,6 +46,7 @@ jobs:
 
   bap-mq-aws-lambda-sqs:
     name: Build and Publish MinimalQueues.AwsLambaSqs project
+    if: ${{ inputs.project }} == 'MinimalQueues.AwsLambaSqs'
     uses: ./.github/workflows/_reusable_nuget_publish.yml
     with:
       version: ${{ inputs.version }}
@@ -44,6 +57,7 @@ jobs:
 
   bap-mq-aws-sqs:
     name: Build and Publish MinimalQueues.AwsSqs project
+    if: ${{ inputs.project }} == 'MinimalQueues.AwsSqs'
     uses: ./.github/workflows/_reusable_nuget_publish.yml
     with:
       version: ${{ inputs.version }}
@@ -54,6 +68,7 @@ jobs:
 
   bap-mq-azure:
     name: Build and Publish MinimalQueues.AzureServiceBus project
+    if: ${{ inputs.project }} == 'MinimalQueues.AzureServiceBus'
     uses: ./.github/workflows/_reusable_nuget_publish.yml
     with:
       version: ${{ inputs.version }}
@@ -64,6 +79,7 @@ jobs:
 
   bap-mq-rabbitmq:
     name: Build and Publish MinimalQueues.RabbitMQ project
+    if: ${{ inputs.project }} == 'MinimalQueues.RabbitMQ'
     uses: ./.github/workflows/_reusable_nuget_publish.yml
     with:
       version: ${{ inputs.version }}
