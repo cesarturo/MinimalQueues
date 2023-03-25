@@ -39,11 +39,11 @@ jobs:
         working-directory: ${{ inputs.sln_path }}
       
       - name: Build solution
-        run: dotnet build --configuration Release --framework net6.0 /property:Version=${{ inputs.version }}
+        run: dotnet build --configuration Release /property:Version=${{ inputs.version }}
         working-directory: ${{ inputs.sln_path }}
 
       - name: Publish CSharp Project
-        run: dotnet publish --configuration Release --framework net6.0 --no-build --no-restore /property:Version=${{ inputs.version }}
+        run: dotnet publish --configuration Release --no-build --no-restore /property:Version=${{ inputs.version }}
         working-directory: ${{ inputs.csproj_path }}
 
       - name: Nuget Pack CSharp Project
