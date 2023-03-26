@@ -42,10 +42,6 @@ jobs:
         run: dotnet build --configuration Release /property:Version=${{ inputs.version }}
         working-directory: ${{ inputs.sln_path }}
 
-      - name: Publish CSharp Project
-        run: dotnet publish --configuration Release --no-build --no-restore /property:Version=${{ inputs.version }}
-        working-directory: ${{ inputs.csproj_path }}
-
       - name: Nuget Pack CSharp Project
         run: dotnet pack --configuration Release --no-restore --no-build /property:Version=${{ inputs.version }}
         working-directory: ${{ inputs.csproj_path }}
