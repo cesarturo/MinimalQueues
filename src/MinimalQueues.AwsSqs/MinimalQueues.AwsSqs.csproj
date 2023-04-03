@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net5.0;net6.0</TargetFrameworks>
-    <Version>1.0.4</Version>
+    <Version>1.0.5</Version>
     <LangVersion>latest</LangVersion>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <RepositoryUrl>https://github.com/cesarturo/MinimalQueues</RepositoryUrl>
@@ -15,7 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(Configuration)'=='Release' ">
-    <PackageReference Include="MinimalQueues.Core" Version="1.0.1" />
+    <PackageReference Include="MinimalQueues.Core" Version="1.0.3" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)'=='Debug' ">
