@@ -11,6 +11,7 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <CheckEolTargetFramework>false</CheckEolTargetFramework>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(Configuration)'=='Release' ">
@@ -22,8 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MinimalSqsClient" Version="1.0.3" />
-    <PackageReference Include="System.Memory.Data" Version="7.0.0" />
+    <PackageReference Include="MinimalSqsClient" Version="1.0.4" />
   </ItemGroup>
 
   <ItemGroup>
