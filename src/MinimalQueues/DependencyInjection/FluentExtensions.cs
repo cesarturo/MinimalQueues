@@ -10,6 +10,14 @@ public static class FluentExtensions
     {
         return optionsBuilder.Configure(handlerOptions => handlerOptions.DeserializerInstance = new Deserializer(jsonSerializerOptions));
     }
+    public static IOptionsBuilder<HandlerOptions> DeserializeWith<TDeserializer>(this IOptionsBuilder<HandlerOptions> optionsBuilder) where TDeserializer : IDeserializer
+    {
+        return optionsBuilder.Configure(options => options.DeserializerType = typeof(TDeserializer));
+    }
+    public static IOptionsBuilder<HandlerOptions> DeserializeWith(this IOptionsBuilder<HandlerOptions> optionsBuilder, IDeserializer deserializer)
+    {
+        return optionsBuilder.Configure(options => options.DeserializerInstance = deserializer);
+    }
     public static IOptionsBuilder<EndOptions> Use(this IOptionsBuilder<HandlerOptions> optionsBuilder, Delegate handlerDelegate
         , string name)
     {
@@ -56,6 +64,10 @@ public static class FluentExtensions
     public static IOptionsBuilder<EndOptions> DeserializeWith<TDeserializer>(this IOptionsBuilder<EndOptions> optionsBuilder) where TDeserializer : IDeserializer
     {
         return optionsBuilder.Configure(options => options.DeserializerType = typeof(TDeserializer));
+    }
+    public static IOptionsBuilder<EndOptions> DeserializeWith(this IOptionsBuilder<EndOptions> optionsBuilder, IDeserializer deserializer)
+    {
+        return optionsBuilder.Configure(options => options.DeserializerInstance = deserializer);
     }
     public static IOptionsBuilder<EndOptions> ConfigureJson(this IOptionsBuilder<EndOptions> builder
         , JsonSerializerOptions jsonSerializerOptions)
