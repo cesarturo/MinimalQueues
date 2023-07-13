@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Amazon.Lambda.RuntimeSupport;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using MinimalQueues.Core;
@@ -6,8 +7,10 @@ using MinimalQueues.Core.Options;
 
 namespace MinimalQueues.AwsLambdaSqs;
 
+[Obsolete]
 public static class AwsLambdaSqsExtensions
 {
+    [Obsolete]
     public static IOptionsBuilder<QueueProcessorOptions> ConfigureAwsLambdaSqsListener(this IOptionsBuilder<QueueProcessorOptions> builder
         , string? queueArn = null
         , Action<Exception>? onError = null)
@@ -18,19 +21,21 @@ public static class AwsLambdaSqsExtensions
             configuration.OnError = onError;
         });
     }
+    [Obsolete]
     public static IOptionsBuilder<QueueProcessorOptions> ConfigureAwsLambdaSqsListener(this IOptionsBuilder<QueueProcessorOptions> builder
         , Action<IAwsLambdaSqsConnectionConfiguration, IServiceProvider> configure)
     {
         return builder.ConfigureAwsLambdaSqsListener<IServiceProvider>(configure);
     }
+    [Obsolete]
     public static IOptionsBuilder<QueueProcessorOptions> ConfigureAwsLambdaSqsListener<TDependency>(this IOptionsBuilder<QueueProcessorOptions> builder
         , Action<IAwsLambdaSqsConnectionConfiguration, TDependency> configure) where TDependency : class
     {
         builder.ConfigureServices(services =>
         {
             services.TryAddSingleton<MessageProcessor>();
-            services.TryAddSingleton<LambdaEventListenerHostedService>();
-            services.AddHostedService(sp => sp.GetRequiredService<LambdaEventListenerHostedService>());
+            services.TryAddSingleton<LambdaBootstrapHostedService>();
+            services.AddHostedService(sp => sp.GetRequiredService<LambdaBootstrapHostedService>());
         });
         return builder.Configure((QueueProcessorOptions queueProcessorOptions, TDependency dependency, MessageProcessor messageProcessor) =>
         {
@@ -40,7 +45,7 @@ public static class AwsLambdaSqsExtensions
             queueProcessorOptions.Connection = connection;
         });
     }
-
+    [Obsolete]
     public static IOptionsBuilder<QueueProcessorOptions> AddAwsLambdaSqsListener(this IHostBuilder hostBuilder
         , string? queueArn = null
         , Action<Exception>? onError = null)
@@ -48,12 +53,14 @@ public static class AwsLambdaSqsExtensions
         return hostBuilder.AddQueueProcessorHostedService()
                           .ConfigureAwsLambdaSqsListener(queueArn, onError);
     }
+    [Obsolete]
     public static IOptionsBuilder<QueueProcessorOptions> AddAwsLambdaSqsListener(this IHostBuilder hostBuilder
         , Action<IAwsLambdaSqsConnectionConfiguration, IServiceProvider> configure)
     {
         return hostBuilder.AddQueueProcessorHostedService()
             .ConfigureAwsLambdaSqsListener(configure);
     }
+    [Obsolete]
     public static IOptionsBuilder<QueueProcessorOptions> AddAwsLambdaSqsListener<TDependency>(this IHostBuilder hostBuilder
         , Action<IAwsLambdaSqsConnectionConfiguration, TDependency> configure) where TDependency : class
     {

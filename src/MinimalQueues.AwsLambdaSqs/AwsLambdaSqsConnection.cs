@@ -10,17 +10,21 @@ internal sealed class AwsLambdaSqsConnection: IQueueConnection, IAwsLambdaSqsCon
 
     private Func<IMessage, CancellationToken, Task>? _processMessageDelegate;
 
+    private CancellationToken _cancellation;
+         
+
     public Task Start(Func<IMessage, CancellationToken, Task> processMessageDelegate, CancellationToken cancellationToken)
     {
         _processMessageDelegate = processMessageDelegate;
+        _cancellation = cancellationToken;
         return Task.CompletedTask;
     }
     
-    internal async Task ProcessMessage(LambdaSqsMessage message, CancellationToken cancellation)
+    internal async Task ProcessMessage(LambdaSqsMessage message)
     {
         try
         {
-            await _processMessageDelegate!(message, cancellation);
+            await _processMessageDelegate!(message, _cancellation);
         }
         catch (Exception exception)
         {

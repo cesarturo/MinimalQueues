@@ -1,22 +1,16 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text.Json;
 using Amazon.Lambda.Core;
-using Microsoft.Extensions.Hosting;
 
 namespace MinimalQueues.AwsLambdaSqs;
 
-internal sealed class MessageProcessor
+public sealed class MessageProcessor
 {
-    private readonly IHostApplicationLifetime _appLifetime;
     private readonly Dictionary<string, AwsLambdaSqsConnection> NamedConnections = new();
     private AwsLambdaSqsConnection? DefaultConnection;
     private readonly JsonSerializerOptions _inputSerializerOptions = new (){ PropertyNameCaseInsensitive = true };
 
-    public MessageProcessor(IHostApplicationLifetime appLifetime)
-    {
-        _appLifetime = appLifetime;
-    }
-    public void AddConnection(AwsLambdaSqsConnection connection)
+    internal void AddConnection(AwsLambdaSqsConnection connection)
     {
         if (connection.QueueArn is null)
         {
@@ -55,7 +49,7 @@ internal sealed class MessageProcessor
         if (connection is null) return null;
         try
         {
-            await connection.ProcessMessage(new LambdaSqsMessage(record), _appLifetime.ApplicationStopping);
+            await connection.ProcessMessage(new LambdaSqsMessage(record));
         }
         catch
         {
