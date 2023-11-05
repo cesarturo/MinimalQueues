@@ -1,0 +1,35 @@
+name: Nuget Publish Csproj
+
+on:
+  workflow_call:
+    inputs:
+      csproj_path:
+        type: string
+        required: true
+    secrets:
+      NUGET_API_KEY:
+        required: true
+
+jobs:
+  build-and-publish:
+    name: Build and publish project
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: | 
+            5.x
+            6.x
+
+      - name: Nuget Pack CSharp Project
+        run: dotnet pack --configuration Release
+        working-directory: ${{ inputs.csproj_path }}
+
+      - name: Nuget Push CSharp Project
+        run: dotnet nuget push **/*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
+        working-directory: ${{ inputs.csproj_path }}

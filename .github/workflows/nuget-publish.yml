@@ -1,0 +1,45 @@
+name: Nuget Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      project:
+        type: choice
+        description: Project to publish
+        options:
+          - MinimalQueues.Core
+          - MinimalQueues
+          - MinimalQueues.AwsLambaSqs
+          - MinimalQueues.AwsSqs
+          - MinimalQueues.AzureServiceBus
+          - MinimalQueues.RabbitMQ
+    secrets:
+      NUGET_API_KEY:
+        required: true
+
+jobs:
+  select-csproj:
+    name: Build and Publish project
+    runs-on: ubuntu-latest
+    outputs: 
+      CSPROJ_PATH: ${{steps.select-csproj.outputs.CSPROJ_PATH}}
+    steps:
+      - name: select csproj
+        id: select-csproj
+        run: |
+          case "${{ inputs.project }}" in
+          "MinimalQueues.Core")            echo "CSPROJ_PATH=./src/MinimalQueues.Core" >> "$GITHUB_OUTPUT";;
+          "MinimalQueues")                 echo "CSPROJ_PATH=./src/MinimalQueues" >> "$GITHUB_OUTPUT";;
+          "MinimalQueues.AwsLambaSqs")     echo "CSPROJ_PATH=./src/MinimalQueues.AwsLambdaSqs" >> "$GITHUB_OUTPUT";;
+          "MinimalQueues.AwsSqs")          echo "CSPROJ_PATH=./src/MinimalQueues.AwsSqs" >> "$GITHUB_OUTPUT";;
+          "MinimalQueues.AzureServiceBus") echo "CSPROJ_PATH=./src/MinimalQueues.AzureServiceBus" >> "$GITHUB_OUTPUT";;
+          "MinimalQueues.RabbitMQ")        echo "CSPROJ_PATH=/src/MinimalQueues.RabbitMQ" >> "$GITHUB_OUTPUT";;
+          esac
+
+  publish:
+    name: publish
+    needs: select-csproj
+    uses: ./.github/workflows/nuget-publish-csproj.yml
+    with:
+      csproj_path: ${{ needs.select-csproj.outputs.CSPROJ_PATH }}
+    secrets: inherit
