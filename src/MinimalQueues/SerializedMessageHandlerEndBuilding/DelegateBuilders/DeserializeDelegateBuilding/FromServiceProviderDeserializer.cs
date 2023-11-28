@@ -2,7 +2,7 @@
 
 namespace MinimalQueues;
 
-internal static class DeserializerWithServiceProvider 
+internal static class FromServiceProviderDeserializer 
 {
     public static T? Deserialize<TDeserializer,T>(IServiceProvider serviceProvider, BinaryData data)
         where TDeserializer : IDeserializer

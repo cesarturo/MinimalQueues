@@ -1,10 +1,10 @@
 ﻿namespace MinimalQueues;
 
-internal sealed class DeserializerWithInstance
+internal sealed class FromInstanceDeserializer
 {
     private readonly IDeserializer _deserializer;
 
-    public DeserializerWithInstance(IDeserializer deserializer)
+    public FromInstanceDeserializer(IDeserializer deserializer)
     {
         _deserializer = deserializer;
     }

@@ -23,9 +23,7 @@ internal static class EndDelegateParameterClassifier
         return new EndDelegateParameters(parametersClassified, bodyParameter.parameterInfo);
     }
     private static Exception CreateMoreThanOneBodyParameterException(Delegate handlerDelegate)
-    {
-        return new Exception($"Handler delegate {handlerDelegate.Method} contains more than one body parameter.");
-    }
+        => new($"Handler delegate {handlerDelegate.Method} contains more than one body parameter.");
 
     private static (ParameterInfo parameterInfo, ParameterKind type) GetParameterWithType(ParameterInfo parameterInfo, IServiceProviderIsService isService)
     {

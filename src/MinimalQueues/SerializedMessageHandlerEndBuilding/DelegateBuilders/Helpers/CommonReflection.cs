@@ -18,10 +18,13 @@ internal sealed class CommonReflection
         getServiceMethod    = serviceProviderType.GetMethod(nameof(IServiceProvider.GetService))!;
         MessageType         = typeof(IMessage);
         BinaryDataType      = typeof(BinaryData);
-        DeserializeMethodGenericDefinition 
-            = typeof(IDeserializer).GetMethod(nameof(IDeserializer.Deserialize), 1, new[] { BinaryDataType })!;
-        GetPropertyMethodDefinition = typeof(IMessageProperties).GetMethod(nameof(IMessageProperties.GetProperty)
-            , 1
-            , new[] { typeof(string) })!;
+        DeserializeMethodGenericDefinition = typeof(IDeserializer)
+            .GetMethod(nameof(IDeserializer.Deserialize)
+                     , 1
+                     , new[] { BinaryDataType })!;
+        GetPropertyMethodDefinition = typeof(IMessageProperties)
+            .GetMethod(nameof(IMessageProperties.GetProperty)
+                     , 1
+                     , new[] { typeof(string) })!;
     }
 }

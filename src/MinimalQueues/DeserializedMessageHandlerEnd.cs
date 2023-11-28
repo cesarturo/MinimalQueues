@@ -4,11 +4,18 @@ namespace MinimalQueues;
 
 internal sealed class DeserializedMessageHandlerEnd<TMessage> : IDeserializedMessageHandlerEnd
 {
-#pragma warning disable CS8618
-    public Func<IMessageProperties, bool> Match { get; set; }
-    public Func<IServiceProvider, BinaryData, TMessage?> Deserialize { get; set; }
-    public Func<IServiceProvider, TMessage?, IMessageProperties, CancellationToken, Task> HandleDeserializedAsync { get; set; }
-#pragma warning restore CS8618
+    public DeserializedMessageHandlerEnd(Func<IMessageProperties, bool> match
+                                       , Func<IServiceProvider, BinaryData, TMessage?> deserialize
+                                       , Func<IServiceProvider, TMessage?, IMessageProperties, CancellationToken, Task> handleDeserializedAsync)
+    {
+        Match = match;
+        Deserialize = deserialize;
+        HandleDeserializedAsync = handleDeserializedAsync;
+    }
+    public Func<IMessageProperties, bool> Match { get; }
+    public Func<IServiceProvider, BinaryData, TMessage?> Deserialize { get; }
+    public Func<IServiceProvider, TMessage?, IMessageProperties, CancellationToken, Task> HandleDeserializedAsync { get; }
+
     public async Task HandleAsync(IMessage message, Func<IMessage, Task>? next, IServiceProvider serviceProvider, CancellationToken token)
     {
         var deserializedBody = Deserialize(serviceProvider, message.GetBody());
@@ -17,10 +24,15 @@ internal sealed class DeserializedMessageHandlerEnd<TMessage> : IDeserializedMes
 }
 internal sealed class DeserializedMessageHandlerEnd : IDeserializedMessageHandlerEnd
 {
-#pragma warning disable CS8618
-    public Func<IMessageProperties, bool> Match { get; set; }
-    public Func<IServiceProvider, IMessageProperties, CancellationToken, Task> HandleDeserializedAsync { get; set; }
-#pragma warning restore CS8618
+    public DeserializedMessageHandlerEnd(Func<IMessageProperties, bool> match
+                                       , Func<IServiceProvider, IMessageProperties, CancellationToken, Task> handleDeserializedAsync)
+    {
+        Match = match;
+        HandleDeserializedAsync = handleDeserializedAsync;
+    }
+    public Func<IMessageProperties, bool> Match { get; }
+    public Func<IServiceProvider, IMessageProperties, CancellationToken, Task> HandleDeserializedAsync { get; }
+
     public async Task HandleAsync(IMessage message, Func<IMessage, Task>? next, IServiceProvider serviceProvider, CancellationToken token)
     {
         await HandleDeserializedAsync(serviceProvider, message, token);
