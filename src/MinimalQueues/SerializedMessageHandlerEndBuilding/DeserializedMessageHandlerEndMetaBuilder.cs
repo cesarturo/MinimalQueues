@@ -8,46 +8,46 @@ internal static class DeserializedMessageHandlerEndMetaBuilder
                                                        , HandlerOptions handlerOptions
                                                        , IServiceProviderIsService isService)
     {
-        var endDelegateParameters = EndDelegateParameterClassifier.Classify(options.HandlerDelegate, isService);
+        var endDelegateParameterInfos = EndDelegateMetadataProvider.Get(options.HandlerDelegate, isService);
 
-        if (endDelegateParameters.BodyParameter is null)
-            return BuildNonGeneric(options, endDelegateParameters);
+        if (endDelegateParameterInfos.BodyParameter is null)
+            return BuildNonGeneric(options, endDelegateParameterInfos);
 
-        return BuildGenericUsingReflection(options, handlerOptions, endDelegateParameters);
+        return BuildGenericUsingReflection(options, handlerOptions, endDelegateParameterInfos);
     }
 
     private static DeserializedMessageHandlerEnd BuildNonGeneric(EndOptions endOptions
-                                                               , EndDelegateParameters endDelegateParameters)
+                                                               , EndDelegateMetadata endDelegateMetadata)
     {
         var match = endOptions.Match;
 
-        var handleDeserializedAsync = HandleDeserializeAsyncDelegateMetaBuilder.Build(endDelegateParameters, endOptions);
+        var handleDeserializedAsync = HandleDeserializeAsyncDelegateMetaBuilder.Build(endDelegateMetadata, endOptions);
 
         return new DeserializedMessageHandlerEnd(match, handleDeserializedAsync);
     }
     
     private static IDeserializedMessageHandlerEnd BuildGenericUsingReflection(EndOptions endOptions
                                                                             , HandlerOptions handlerOptions
-                                                                            , EndDelegateParameters endDelegateParameters)
+                                                                            , EndDelegateMetadata endDelegateMetadata)
     {
         var methodInfo = typeof(DeserializedMessageHandlerEndMetaBuilder)
             .GetMethod(nameof(DeserializedMessageHandlerEndMetaBuilder.BuildGeneric))!
-            .MakeGenericMethod(endDelegateParameters.BodyParameter.ParameterType);
+            .MakeGenericMethod(endDelegateMetadata.BodyParameter.ParameterType);
 
-        var end = methodInfo.Invoke(null, new object[] { endOptions, handlerOptions, endDelegateParameters })!;
+        var end = methodInfo.Invoke(null, new object[] { endOptions, handlerOptions, endDelegateMetadata })!;
 
         return (IDeserializedMessageHandlerEnd)end;
     }
 
     private static DeserializedMessageHandlerEnd<TMesssage> BuildGeneric<TMesssage>(EndOptions endOptions
                                                                                   , HandlerOptions handlerOptions
-                                                                                  , EndDelegateParameters endDelegateParameters)
+                                                                                  , EndDelegateMetadata endDelegateMetadata)
     {
         var match = endOptions.Match;
 
         var deserialize = DeserializeDelegateBuilder.Build<TMesssage>(endOptions, handlerOptions);
 
-        var handleDeserializedAsync = HandleDeserializeAsyncDelegateMetaBuilder.Build<TMesssage>(endDelegateParameters, endOptions);
+        var handleDeserializedAsync = HandleDeserializeAsyncDelegateMetaBuilder.Build<TMesssage>(endDelegateMetadata, endOptions);
 
         return new DeserializedMessageHandlerEnd<TMesssage>(match, deserialize, handleDeserializedAsync);
     }

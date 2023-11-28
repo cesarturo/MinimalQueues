@@ -4,30 +4,30 @@ using MinimalQueues.Core;
 
 namespace MinimalQueues;
 
-internal static class EndDelegateParameterClassifier
+internal static class EndDelegateMetadataProvider
 {
-    internal static EndDelegateParameters Classify(Delegate handlerDelegate, IServiceProviderIsService isService)
+    internal static EndDelegateMetadata Get(Delegate handlerDelegate, IServiceProviderIsService isService)
     {
-        var parametersClassified = handlerDelegate.Method.GetParameters()
-            .Select(parameterInfo => GetParameterWithType(parameterInfo, isService))
+        var endDelegateParameterInfos = handlerDelegate.Method.GetParameters()
+            .Select(parameterInfo => GetEndDelegateParameterInfos(parameterInfo, isService))
             .ToArray();
-        (ParameterInfo parameterInfo, ParameterKind type) bodyParameter;
+        EndDelegateParameterInfo bodyParameter;
         try
         {
-            bodyParameter = parametersClassified.SingleOrDefault(itm => itm.type == ParameterKind.body);
+            bodyParameter = endDelegateParameterInfos.SingleOrDefault(itm => itm.Type == ParameterKind.body);
         }
         catch (InvalidOperationException)
         {
             throw CreateMoreThanOneBodyParameterException(handlerDelegate);
         }
-        return new EndDelegateParameters(parametersClassified, bodyParameter.parameterInfo);
+        return new EndDelegateMetadata(endDelegateParameterInfos, bodyParameter.ParameterInfo);
     }
     private static Exception CreateMoreThanOneBodyParameterException(Delegate handlerDelegate)
         => new($"Handler delegate {handlerDelegate.Method} contains more than one body parameter.");
 
-    private static (ParameterInfo parameterInfo, ParameterKind type) GetParameterWithType(ParameterInfo parameterInfo, IServiceProviderIsService isService)
+    private static EndDelegateParameterInfo GetEndDelegateParameterInfos(ParameterInfo parameterInfo, IServiceProviderIsService isService)
     {
-        return (parameterInfo, type: parameterInfo switch
+        return new EndDelegateParameterInfo(parameterInfo, type: parameterInfo switch
         {
             _ when isService.IsService(parameterInfo.ParameterType)         => ParameterKind.service,
             _ when parameterInfo.GetCustomAttribute<PropAttribute>() is { } => ParameterKind.prop,
@@ -36,3 +36,4 @@ internal static class EndDelegateParameterClassifier
         });
     }
 }
+

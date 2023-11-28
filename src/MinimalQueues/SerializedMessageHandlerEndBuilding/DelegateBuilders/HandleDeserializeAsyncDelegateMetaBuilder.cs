@@ -6,7 +6,7 @@ namespace MinimalQueues;
 
 internal ref struct HandleDeserializeAsyncDelegateMetaBuilder
 {
-    private readonly EndDelegateParameters _endDelegateParameters;
+    private readonly EndDelegateMetadata _endDelegateMetadata;
     private readonly EndOptions            _options;
 
     private ParameterExpression? _serviceProviderParameter;
@@ -16,16 +16,16 @@ internal ref struct HandleDeserializeAsyncDelegateMetaBuilder
     private CommonReflection?    _reflection;
 
     internal static Func<IServiceProvider, IMessageProperties, CancellationToken, Task> Build(
-        EndDelegateParameters endDelegateParameters, EndOptions options) 
-            => new HandleDeserializeAsyncDelegateMetaBuilder(endDelegateParameters, options).Build();
+        EndDelegateMetadata endDelegateMetadata, EndOptions options) 
+            => new HandleDeserializeAsyncDelegateMetaBuilder(endDelegateMetadata, options).Build();
 
     internal static Func<IServiceProvider, TMessage?, IMessageProperties, CancellationToken, Task> Build<TMessage>(
-        EndDelegateParameters endDelegateParameters, EndOptions options) 
-            => new HandleDeserializeAsyncDelegateMetaBuilder(endDelegateParameters, options).Build<TMessage>();
+        EndDelegateMetadata endDelegateMetadata, EndOptions options) 
+            => new HandleDeserializeAsyncDelegateMetaBuilder(endDelegateMetadata, options).Build<TMessage>();
 
-    private HandleDeserializeAsyncDelegateMetaBuilder(EndDelegateParameters endDelegateParameters, EndOptions options)
+    private HandleDeserializeAsyncDelegateMetaBuilder(EndDelegateMetadata endDelegateMetadata, EndOptions options)
     {
-        _endDelegateParameters = endDelegateParameters;
+        _endDelegateMetadata = endDelegateMetadata;
         _options = options;
     }
     
@@ -56,7 +56,7 @@ internal ref struct HandleDeserializeAsyncDelegateMetaBuilder
         _serviceProviderParameter     = Expression.Parameter(typeof(IServiceProvider));
         _messagePropertiesParameter   = Expression.Parameter(typeof(IMessageProperties));
         _deserializedMessageParameter = includeMessageParameter
-            ? Expression.Parameter(_endDelegateParameters.BodyParameter!.ParameterType)
+            ? Expression.Parameter(_endDelegateMetadata.BodyParameter!.ParameterType)
             : null;
         _cancellationTokenParameter   = Expression.Parameter(typeof(CancellationToken));
 
@@ -76,14 +76,14 @@ internal ref struct HandleDeserializeAsyncDelegateMetaBuilder
 
         _reflection = new CommonReflection();
 
-        var invokationArguments = CreateArgumentExpressions(_endDelegateParameters.ParametersClassified);
+        var invokationArguments = CreateArgumentExpressions(_endDelegateMetadata.ParametersClassified);
 
         return Expression.Call(targetInstanceExpression
                              , _options.HandlerDelegate.Method
                              , invokationArguments);
     }
 
-    private Expression[] CreateArgumentExpressions((ParameterInfo parameterInfo, ParameterKind type)[] parametersMetadata)
+    private Expression[] CreateArgumentExpressions(EndDelegateParameterInfo[] parametersMetadata)
     {
         var argumentExpressions = new Expression[parametersMetadata.Length];
 
@@ -93,11 +93,11 @@ internal ref struct HandleDeserializeAsyncDelegateMetaBuilder
         return argumentExpressions;
     }
 
-    private Expression CreateArgumentExpression((ParameterInfo parameterInfo, ParameterKind type) parameterMetadata)
+    private Expression CreateArgumentExpression(EndDelegateParameterInfo parameterMetadata)
     {
-        var parameterInfo = parameterMetadata.parameterInfo;
+        var parameterInfo = parameterMetadata.ParameterInfo;
 
-        return parameterMetadata.type switch
+        return parameterMetadata.Type switch
         {
             ParameterKind.service      => BuildGetServiceExpression(_serviceProviderParameter, _reflection, parameterInfo),
             ParameterKind.prop         => BuildGetPropertyExpression(_messagePropertiesParameter, _reflection.GetPropertyMethodDefinition, parameterInfo),
