@@ -1,85 +1,43 @@
-﻿using System.Collections.Concurrent;
-using System.Text.Json;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using MinimalQueues;
+﻿using Microsoft.Extensions.Hosting;
 using MinimalQueues.AwsSqs;
-using MinimalSqsClient;
+using MinimalQueues.Core;
+using MinimalQueues.Core.Options;
 using NUnit.Framework;
+using NUnit.Framework.Internal;
 
 [TestFixture]
-public class TestAwsSqs
+[TestFixtureSource(nameof(GetListenerConfigurations))]
+public class TestAwsSqs : BaseTest
 {
-    private IHost host;
-    private string[] messages;
-    private SqsClient sqsClient;
-    [OneTimeSetUp]
-    public async Task Setup()
+    private static string QueueUrl => Environment.GetEnvironmentVariable("QUEUE_URL")!;//TestContext.Parameters["QueueUrl"]
+
+    public TestAwsSqs(Func<IHostBuilder, IOptionsBuilder<QueueProcessorOptions>> configureListener)
+        :base(configureListener, new SqsMessageSender(QueueUrl), new SqsMessageReceiver())
     {
-        sqsClient = new SqsClient(new SqsClientOptions
-        {
-            QueueUrl = Environment.GetEnvironmentVariable("QUEUE_URL")!//TestContext.Parameters["QueueUrl"]
-        });
-        var purgeTask = sqsClient.PurgeQueueAsync();
 
-        CreateHost();
-
-        await purgeTask;
-
-        await host.StartAsync();
     }
 
-    private void CreateHost()
+    private static IEnumerable<TestFixtureParameters> GetListenerConfigurations()
     {
-        var hostBuilder = Host.CreateDefaultBuilder();
-        var queueApp = hostBuilder
-            .ConfigureServices(services => services.AddSingleton<ConcurrentBag<string>>())
-            .AddAwsSqsListener(queueUrl: Environment.GetEnvironmentVariable("QUEUE_URL") //TestContext.Parameters["QueueUrl"]
-                , prefetchCount: 20
+        yield return new TestFixtureParameters(new Func<IHostBuilder, IOptionsBuilder<QueueProcessorOptions>>(
+            hostBuilder => hostBuilder.AddAwsSqsListener(
+                                              queueUrl: QueueUrl
+                                            , prefetchCount: 20
+                                            , visibilityTimeout: 5
+                                            , renewVisibilityTime: 4
+                                            , maxConcurrency: 4)))
+        {
+            TestName = "With Prefetch (prefecth: 20, concurrency: 4)"
+        };
+
+        yield return new TestFixtureParameters(new Func<IHostBuilder, IOptionsBuilder<QueueProcessorOptions>>(
+            hostBuilder => hostBuilder.AddAwsSqsListener(
+                queueUrl: QueueUrl
                 , visibilityTimeout: 5
                 , renewVisibilityTime: 4
-                , maxConcurrency: 4)
-            .UseDeserializedMessageHandler();
-
-        queueApp.Use((string message, ConcurrentBag<string> receivedMessages) =>
+                , maxConcurrency: 4)))
         {
-            receivedMessages.Add(message);
-            return Task.CompletedTask;
-        });
-
-        host = hostBuilder.Build();
-    }
-
-    [OneTimeTearDown]
-    public async Task Teardown()
-    {
-        await host.StopAsync();
-    }
-
-    private async Task SendMessages(string[] messages)
-    {
-        await Task.Delay(TimeSpan.FromSeconds(5));
-        var groups = Enumerable.Range(0, messages.Length).GroupBy(i => i / 10);
-        foreach (var group in groups)
-        {
-            if (group.Key is 3)
-            {
-                await Task.Delay(TimeSpan.FromSeconds(10));
-            }
-            var batch = group.Select(i => JsonSerializer.Serialize(messages[i])).ToArray();
-            await sqsClient.SendMessageBatchAsync(batch);
-        }
-    }
-
-    [Test]
-    public async Task All_messages_were_processed()
-    {
-        messages = Enumerable.Range(0, 100).Select(i => $"testmessage-{i}").ToArray();
-
-        await SendMessages(messages);
-
-        var receivedMessages = host.Services.GetRequiredService<ConcurrentBag<string>>();
-
-        Assert.That(() => receivedMessages, Is.EquivalentTo(messages).After(30).Seconds.PollEvery(2).Seconds);
+            TestName = "Without Prefetch (concurrency: 4)"
+        };
     }
 }
