@@ -22,7 +22,7 @@ public static class BuilderOfQueueProcessorOptionsExtensions
         //It should not be a problem since there is only one DeserializeMessageHandler per QueueProcessor:
         return optionsBuilder.AddOptions<HandlerOptions>(optionsBuilder.Name);
     }
-    public static IOptionsBuilder<EndOptions> UseDeserializedMessageHandler(this IOptionsBuilder<QueueProcessorOptions> optionsBuilder
+    public static IOptionsBuilder<EndpointOptions> UseDeserializedMessageHandler(this IOptionsBuilder<QueueProcessorOptions> optionsBuilder
         , Delegate defaultHandlerDelegate)
     {
         var serializedHandlerOptions = optionsBuilder.UseDeserializedMessageHandler();

@@ -4,10 +4,10 @@ using MinimalQueues.Core;
 
 namespace MinimalQueues;
 
-internal ref struct HandleDeserializeAsyncDelegateMetaBuilder
+internal ref struct HandleAsyncDelegateMetaBuilder
 {
     private readonly EndDelegateMetadata _endDelegateMetadata;
-    private readonly EndOptions            _options;
+    private readonly EndpointOptions     _options;
 
     private ParameterExpression? _serviceProviderParameter;
     private ParameterExpression? _deserializedMessageParameter;
@@ -16,20 +16,20 @@ internal ref struct HandleDeserializeAsyncDelegateMetaBuilder
     private CommonReflection?    _reflection;
 
     internal static Func<IServiceProvider, IMessageProperties, CancellationToken, Task> Build(
-        EndDelegateMetadata endDelegateMetadata, EndOptions options) 
-            => new HandleDeserializeAsyncDelegateMetaBuilder(endDelegateMetadata, options).Build();
+        EndDelegateMetadata endDelegateMetadata, EndpointOptions options) 
+            => new HandleAsyncDelegateMetaBuilder(endDelegateMetadata, options).Build();
 
     internal static Func<IServiceProvider, TMessage?, IMessageProperties, CancellationToken, Task> Build<TMessage>(
-        EndDelegateMetadata endDelegateMetadata, EndOptions options) 
-            => new HandleDeserializeAsyncDelegateMetaBuilder(endDelegateMetadata, options).Build<TMessage>();
+        EndDelegateMetadata endDelegateMetadata, EndpointOptions options) 
+            => new HandleAsyncDelegateMetaBuilder(endDelegateMetadata, options).Build<TMessage>();
 
-    private HandleDeserializeAsyncDelegateMetaBuilder(EndDelegateMetadata endDelegateMetadata, EndOptions options)
+    private HandleAsyncDelegateMetaBuilder(EndDelegateMetadata endDelegateMetadata, EndpointOptions options)
     {
         _endDelegateMetadata = endDelegateMetadata;
         _options = options;
     }
     
-    internal Func<IServiceProvider, IMessageProperties, CancellationToken, Task> Build()
+    private Func<IServiceProvider, IMessageProperties, CancellationToken, Task> Build()
     {
         var lambdaParameters = CreateParameterExpressions(includeMessageParameter: false);
 
@@ -40,7 +40,7 @@ internal ref struct HandleDeserializeAsyncDelegateMetaBuilder
                          .Compile();
     }
 
-    internal Func<IServiceProvider, TMessage?, IMessageProperties, CancellationToken, Task> Build<TMessage>()
+    private Func<IServiceProvider, TMessage?, IMessageProperties, CancellationToken, Task> Build<TMessage>()
     {
         var lambdaParameters = CreateParameterExpressions(includeMessageParameter: true);
 
@@ -107,8 +107,9 @@ internal ref struct HandleDeserializeAsyncDelegateMetaBuilder
         };
     }
 
-    private static Expression BuildGetPropertyExpression(ParameterExpression messageVariable,
-        MethodInfo getPropertyMethodDefinition, ParameterInfo parameterInfo)
+    private static Expression BuildGetPropertyExpression(ParameterExpression messageVariable
+                                                        ,MethodInfo getPropertyMethodDefinition
+                                                        ,ParameterInfo parameterInfo)
     {
         var propAttribute = parameterInfo.GetCustomAttribute<PropAttribute>()!;
         var messagePropertyName = propAttribute.PropertyName;
@@ -118,7 +119,9 @@ internal ref struct HandleDeserializeAsyncDelegateMetaBuilder
             , parameterInfo.ParameterType);
     }
 
-    private static Expression BuildGetServiceExpression(ParameterExpression serviceProviderParameter, CommonReflection reflection, ParameterInfo parameterInfo)
+    private static Expression BuildGetServiceExpression(ParameterExpression serviceProviderParameter
+                                                      , CommonReflection reflection
+                                                      , ParameterInfo parameterInfo)
     {
         return Expression.Convert(Expression.Call(serviceProviderParameter
                 , reflection.getServiceMethod

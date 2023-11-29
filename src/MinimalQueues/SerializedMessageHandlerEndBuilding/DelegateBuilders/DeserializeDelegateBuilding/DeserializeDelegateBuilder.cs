@@ -2,12 +2,12 @@
 
 internal static class DeserializeDelegateBuilder
 {
-    internal static Func<IServiceProvider, BinaryData, T?> Build<T>(EndOptions endOptions, HandlerOptions handlerOptions)
+    internal static Func<IServiceProvider, BinaryData, T?> Build<T>(EndpointOptions endpointOptions, HandlerOptions handlerOptions)
     {
-        if (endOptions.DeserializerInstance is { } endDeserializer)
+        if (endpointOptions.DeserializerInstance is { } endDeserializer)
             return GetDeserializeFunction<T>(endDeserializer);
 
-        if (endOptions.DeserializerType is { } endDeserializerType)
+        if (endpointOptions.DeserializerType is { } endDeserializerType)
             return GetDeserializeFunction<T>(endDeserializerType);
 
         if (handlerOptions.DeserializerInstance is { } handlerDeserializer)

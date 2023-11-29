@@ -18,58 +18,58 @@ public static class FluentExtensions
     {
         return optionsBuilder.Configure(options => options.DeserializerInstance = deserializer);
     }
-    public static IOptionsBuilder<EndOptions> Use(this IOptionsBuilder<HandlerOptions> optionsBuilder, Delegate handlerDelegate
+    public static IOptionsBuilder<EndpointOptions> Use(this IOptionsBuilder<HandlerOptions> optionsBuilder, Delegate handlerDelegate
         , string name)
     {
         optionsBuilder.Configure(delegate (HandlerOptions handlerOptions
-            , Microsoft.Extensions.Options.IOptionsMonitor<EndOptions> endOptions)
+            , Microsoft.Extensions.Options.IOptionsMonitor<EndpointOptions> endpointOptions)
         {
-            handlerOptions.UnhandledMessageEndOptions = endOptions.Get(name);
+            handlerOptions.UnhandledMessageEndpointOptions = endpointOptions.Get(name);
         });
-        return optionsBuilder.AddOptions<EndOptions>(name)
-            .Configure(endOptions =>
+        return optionsBuilder.AddOptions<EndpointOptions>(name)
+            .Configure(endpointOptions =>
             {
-                endOptions.HandlerDelegate = handlerDelegate;
+                endpointOptions.HandlerDelegate = handlerDelegate;
             });
     }
-    public static IOptionsBuilder<EndOptions> Use(this IOptionsBuilder<HandlerOptions> optionsBuilder, Delegate handlerDelegate)
+    public static IOptionsBuilder<EndpointOptions> Use(this IOptionsBuilder<HandlerOptions> optionsBuilder, Delegate handlerDelegate)
     {
-        var name = EndNameGenerator.GetNewName();
+        var name = EndpointOptionsNameGenerator.GetNewName();
         return optionsBuilder.Use(handlerDelegate, name);
     }
-    public static IOptionsBuilder<EndOptions> When(this IOptionsBuilder<HandlerOptions> optionsBuilder
+    public static IOptionsBuilder<EndpointOptions> When(this IOptionsBuilder<HandlerOptions> optionsBuilder
         , Delegate match, string name)
     {
         optionsBuilder.Configure(delegate (HandlerOptions handlerOptions
-            , Microsoft.Extensions.Options.IOptionsMonitor<EndOptions> endOptions)
+            , Microsoft.Extensions.Options.IOptionsMonitor<EndpointOptions> endpointOptions)
         {
-            handlerOptions.Ends.Add(endOptions.Get(name));
+            handlerOptions.EndpointsOptions.Add(endpointOptions.Get(name));
         });
-        return optionsBuilder.AddOptions<EndOptions>(name)
-            .Configure(endOptions =>
+        return optionsBuilder.AddOptions<EndpointOptions>(name)
+            .Configure(endpointOptions =>
             {
-                endOptions.Match = MatchMetaBuilder.Build(match);
+                endpointOptions.Match = MatchDelegateMetaBuilder.Build(match);
             });
     }
-    public static IOptionsBuilder<EndOptions> When(this IOptionsBuilder<HandlerOptions> optionsBuilder
+    public static IOptionsBuilder<EndpointOptions> When(this IOptionsBuilder<HandlerOptions> optionsBuilder
         , Delegate match)
     {
-        var name = EndNameGenerator.GetNewName();
-        return optionsBuilder.When(match, name);
+        var optionsName = EndpointOptionsNameGenerator.GetNewName();
+        return optionsBuilder.When(match, optionsName);
     }
-    public static IOptionsBuilder<EndOptions> Use(this IOptionsBuilder<EndOptions> optionsBuilder, Delegate handlerDelegate)
+    public static IOptionsBuilder<EndpointOptions> Use(this IOptionsBuilder<EndpointOptions> optionsBuilder, Delegate handlerDelegate)
     {
         return optionsBuilder.Configure(options => options.HandlerDelegate = handlerDelegate);
     }
-    public static IOptionsBuilder<EndOptions> DeserializeWith<TDeserializer>(this IOptionsBuilder<EndOptions> optionsBuilder) where TDeserializer : IDeserializer
+    public static IOptionsBuilder<EndpointOptions> DeserializeWith<TDeserializer>(this IOptionsBuilder<EndpointOptions> optionsBuilder) where TDeserializer : IDeserializer
     {
         return optionsBuilder.Configure(options => options.DeserializerType = typeof(TDeserializer));
     }
-    public static IOptionsBuilder<EndOptions> DeserializeWith(this IOptionsBuilder<EndOptions> optionsBuilder, IDeserializer deserializer)
+    public static IOptionsBuilder<EndpointOptions> DeserializeWith(this IOptionsBuilder<EndpointOptions> optionsBuilder, IDeserializer deserializer)
     {
         return optionsBuilder.Configure(options => options.DeserializerInstance = deserializer);
     }
-    public static IOptionsBuilder<EndOptions> ConfigureJson(this IOptionsBuilder<EndOptions> builder
+    public static IOptionsBuilder<EndpointOptions> ConfigureJson(this IOptionsBuilder<EndpointOptions> builder
         , JsonSerializerOptions jsonSerializerOptions)
     {
         return builder.Configure(options => options.DeserializerInstance = new Deserializer(jsonSerializerOptions));

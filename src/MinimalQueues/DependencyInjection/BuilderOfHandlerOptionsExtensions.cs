@@ -6,7 +6,7 @@ namespace MinimalQueues;
 
 public static class BuilderOfHandlerOptionsExtensions
 {
-    public static IOptionsBuilder<EndOptions> Map(this IOptionsBuilder<HandlerOptions> optionsBuilder
+    public static IOptionsBuilder<EndpointOptions> Map(this IOptionsBuilder<HandlerOptions> optionsBuilder
         , Delegate handlerDelegate
         , string name
         , Type? deserializerType = null
@@ -15,28 +15,28 @@ public static class BuilderOfHandlerOptionsExtensions
         if (deserializerType is not null && !typeof(IDeserializer).IsAssignableFrom(deserializerType))
             throw new ArgumentException($"deserializerType must implement {nameof(IDeserializer)}", nameof(deserializerType));
 
-        optionsBuilder.Configure(delegate (HandlerOptions handlerOptions, MsOptions.IOptionsMonitor<EndOptions> endOptions)
+        optionsBuilder.Configure(delegate (HandlerOptions handlerOptions, MsOptions.IOptionsMonitor<EndpointOptions> endpointOptions)
         {
             //Runs when HostedService is instantiated, since the HostedService depends on Serialized Handler which depends on this options
-            handlerOptions.UnhandledMessageEndOptions = endOptions.Get(name);
+            handlerOptions.UnhandledMessageEndpointOptions = endpointOptions.Get(name);
         });
-        return optionsBuilder.AddOptions<EndOptions>(name)
-            .Configure(endOptions =>
+        return optionsBuilder.AddOptions<EndpointOptions>(name)
+            .Configure(endpointOptions =>
             {
-                endOptions.HandlerDelegate = handlerDelegate;
-                endOptions.DeserializerType = deserializerType;
-                endOptions.DeserializerInstance = deserializerInstance;
+                endpointOptions.HandlerDelegate = handlerDelegate;
+                endpointOptions.DeserializerType = deserializerType;
+                endpointOptions.DeserializerInstance = deserializerInstance;
             });
     }
-    public static IOptionsBuilder<EndOptions> Map(this IOptionsBuilder<HandlerOptions> optionsBuilder
+    public static IOptionsBuilder<EndpointOptions> Map(this IOptionsBuilder<HandlerOptions> optionsBuilder
         , Delegate handlerDelegate
         , Type? deserializerType = null
         , IDeserializer? deserializerInstance = null)
     {
-        var endName = EndNameGenerator.GetNewName();
-        return optionsBuilder.Map(handlerDelegate, endName, deserializerType, deserializerInstance);
+        var optionsName = EndpointOptionsNameGenerator.GetNewName();
+        return optionsBuilder.Map(handlerDelegate, optionsName, deserializerType, deserializerInstance);
     }
-    public static IOptionsBuilder<EndOptions> Map(this IOptionsBuilder<HandlerOptions> optionsBuilder
+    public static IOptionsBuilder<EndpointOptions> Map(this IOptionsBuilder<HandlerOptions> optionsBuilder
         , Func<IMessageProperties, bool> match
         , Delegate handlerDelegate
         , string name
@@ -47,43 +47,43 @@ public static class BuilderOfHandlerOptionsExtensions
             throw new ArgumentException($"deserializerType must implement {nameof(IDeserializer)}", nameof(deserializerType));
 
         optionsBuilder.Configure(delegate (HandlerOptions handlerOptions
-            , MsOptions.IOptionsMonitor<EndOptions> endOptions)
+            , MsOptions.IOptionsMonitor<EndpointOptions> endpointOptions)
         {
             //Runs when HostedService is instantiated, since the HostedService depends on Serialized Handler which depends on this options
-            handlerOptions.Ends.Add(endOptions.Get(name));
+            handlerOptions.EndpointsOptions.Add(endpointOptions.Get(name));
         });
 
-        return optionsBuilder.AddOptions<EndOptions>(name)
-            .Configure(endOptions =>
+        return optionsBuilder.AddOptions<EndpointOptions>(name)
+            .Configure(endpointOptions =>
             {
-                endOptions.Match = match;
-                endOptions.HandlerDelegate = handlerDelegate;
-                endOptions.DeserializerType = deserializerType;
-                endOptions.DeserializerInstance = deserializerInstance;
+                endpointOptions.Match = match;
+                endpointOptions.HandlerDelegate = handlerDelegate;
+                endpointOptions.DeserializerType = deserializerType;
+                endpointOptions.DeserializerInstance = deserializerInstance;
             });
     }
     
-    public static IOptionsBuilder<EndOptions> Map(this IOptionsBuilder<HandlerOptions> optionsBuilder
+    public static IOptionsBuilder<EndpointOptions> Map(this IOptionsBuilder<HandlerOptions> optionsBuilder
         , Func<IMessageProperties, bool> match
         , Delegate handlerDelegate)
     {
-        return optionsBuilder.Map(match, handlerDelegate, EndNameGenerator.GetNewName());
+        return optionsBuilder.Map(match, handlerDelegate, EndpointOptionsNameGenerator.GetNewName());
     }
 
-    public static IOptionsBuilder<EndOptions> Map(this IOptionsBuilder<HandlerOptions> optionsBuilder
+    public static IOptionsBuilder<EndpointOptions> Map(this IOptionsBuilder<HandlerOptions> optionsBuilder
         , Delegate match
         , Delegate handlerDelegate)
     {
-        return optionsBuilder.Map(MatchMetaBuilder.Build(match), handlerDelegate, EndNameGenerator.GetNewName());
+        return optionsBuilder.Map(MatchDelegateMetaBuilder.Build(match), handlerDelegate, EndpointOptionsNameGenerator.GetNewName());
     }
 
-    public static IOptionsBuilder<EndOptions> Map(this IOptionsBuilder<HandlerOptions> optionsBuilder
+    public static IOptionsBuilder<EndpointOptions> Map(this IOptionsBuilder<HandlerOptions> optionsBuilder
         , Delegate match
         , Delegate handlerDelegate
         , string name
         , Type? deserializerType = null
         , IDeserializer? deserializerInstance = null)
     {
-        return optionsBuilder.Map(MatchMetaBuilder.Build(match), handlerDelegate, name, deserializerType, deserializerInstance);
+        return optionsBuilder.Map(MatchDelegateMetaBuilder.Build(match), handlerDelegate, name, deserializerType, deserializerInstance);
     }
 }

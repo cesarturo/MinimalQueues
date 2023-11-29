@@ -5,19 +5,18 @@ namespace MinimalQueues;
 
 internal sealed class DeserializedMessageHandler
 {
-    private readonly IDeserializedMessageHandlerEnd[] _ends;
+    private readonly IMessageHandlerEndpoint[] _endpoints;
     private readonly MessageHandlerDelegate? _unhandledMessageEnd;
 
     public DeserializedMessageHandler(HandlerOptions handlerOptions, IServiceProviderIsService isService)
     {
-        _ends = handlerOptions.Ends.Select(endOptions => DeserializedMessageHandlerEndMetaBuilder.Build(endOptions, handlerOptions, isService)).ToArray();
-        if (handlerOptions.UnhandledMessageEndOptions is null) return;
-        _unhandledMessageEnd = DeserializedMessageHandlerEndMetaBuilder.Build(handlerOptions.UnhandledMessageEndOptions, handlerOptions, isService).HandleAsync;
-
+        _endpoints = handlerOptions.EndpointsOptions.Select(endOptions => MessageHandlerEndpointBuilder.Build(endOptions, handlerOptions, isService)).ToArray();
+        if (handlerOptions.UnhandledMessageEndpointOptions is null) return;
+        _unhandledMessageEnd = MessageHandlerEndpointBuilder.Build(handlerOptions.UnhandledMessageEndpointOptions, handlerOptions, isService).HandleAsync;
     }
     public async Task Handle(IMessage message, Func<IMessage, Task>? next, IServiceProvider serviceProvider, CancellationToken token)
     {
-        var handler = FindEnd(message);
+        var handler = FindEndpoint(message);
         if (handler is null)
         {
             if (next is not null) await next(message);
@@ -25,13 +24,13 @@ internal sealed class DeserializedMessageHandler
         }
         await handler(message, next, serviceProvider, token);
     }
-    private MessageHandlerDelegate? FindEnd(IMessage message)
+    private MessageHandlerDelegate? FindEndpoint(IMessage message)
     {
-        var ends = this._ends;
-        IDeserializedMessageHandlerEnd? end;
-        for (var i = 0; i < ends.Length; i++)
+        var endpoints = _endpoints;
+        IMessageHandlerEndpoint? end;
+        for (var i = 0; i < endpoints.Length; i++)
         {
-            end = ends[i];
+            end = endpoints[i];
             if (end.Match(message)) return end.HandleAsync;
         }
         return _unhandledMessageEnd;

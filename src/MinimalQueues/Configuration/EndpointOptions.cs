@@ -2,7 +2,7 @@
 
 namespace MinimalQueues;
 
-public sealed class EndOptions
+public sealed class EndpointOptions
 {
 #pragma warning disable CS8618
     public Func<IMessageProperties, bool> Match { get; set; }

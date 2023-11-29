@@ -1,6 +1,6 @@
 ﻿namespace MinimalQueues;
 
-internal class EndNameGenerator
+internal class EndpointOptionsNameGenerator
 {
     internal static int i;
     public static string GetNewName() => $"end{i++}";
