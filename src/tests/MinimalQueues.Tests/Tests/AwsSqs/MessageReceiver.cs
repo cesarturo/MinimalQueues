@@ -5,18 +5,22 @@ using MinimalQueues;
 using MinimalQueues.Core;
 using MinimalQueues.Core.Options;
 
-public class SqsMessageReceiver : IMessageReceiver
+public class MessageReceiver : IDisposable
 {
-    private IHost _host;
+    private IHost? _host;
     public ConcurrentBag<string> ProcessedMessages { get; } = new();
+    private readonly Func<IHostBuilder, IOptionsBuilder<QueueProcessorOptions>> _configureListener;
 
-    
-    public async Task StartAsync(Func<IHostBuilder, IOptionsBuilder<QueueProcessorOptions>> configureListener)
+    public MessageReceiver(Func<IHostBuilder, IOptionsBuilder<QueueProcessorOptions>> configureListener)
+    {
+        _configureListener = configureListener;
+    }
+    public async Task StartAsync()
     {
         var hostBuilder = Host.CreateDefaultBuilder()
             .ConfigureServices(services => services.AddSingleton(ProcessedMessages));
 
-        var queueApp = configureListener(hostBuilder)
+        var queueApp = _configureListener(hostBuilder)
             .UseDeserializedMessageHandler();
 
         queueApp.Use(async (string message, ConcurrentBag<string> receivedMessages, [Prop("execution-time")] string executionTime) =>
@@ -32,7 +36,8 @@ public class SqsMessageReceiver : IMessageReceiver
 
     public void Dispose()
     {
-        _host.Dispose();
+        _host?.Dispose();
+
         ProcessedMessages.Clear();
     }
 }
