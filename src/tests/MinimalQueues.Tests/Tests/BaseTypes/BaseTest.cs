@@ -47,7 +47,7 @@ public abstract class BaseTest
         await _sender.SendMessagesAsync(100, TimeSpan.FromMilliseconds(200));
 
         await Task.Delay(TimeSpan.FromSeconds(10));
-        Assert.That(()=> _receiver.ProcessedMessages, Has.Count.EqualTo(_sender.SentMessages.Count).After(60).Seconds.PollEvery(3).Seconds);
+        Assert.That(() => _receiver.ProcessedMessages, Has.Count.EqualTo(_sender.SentMessages.Count).After(60).Seconds.PollEvery(3).Seconds);
         Assert.That(() => _receiver.ProcessedMessages, Is.EquivalentTo(_sender.SentMessages).After(60).Seconds.PollEvery(3).Seconds);
     }
 

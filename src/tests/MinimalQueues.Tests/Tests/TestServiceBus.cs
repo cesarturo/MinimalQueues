@@ -21,7 +21,7 @@ public class TestServiceBus : BaseTest
             hostbuilder => hostbuilder.AddAzureServiceBusListener(connectionString: connectionString, entityPath: $"{topic}/Subscriptions/{subscription}"
                 , serviceBusProcessorOptions: new ServiceBusProcessorOptions
                 {
-                    MaxConcurrentCalls = 10,
+                    MaxConcurrentCalls = 4,
                     PrefetchCount = 20
                 }
                 , onError: args =>
@@ -41,7 +41,7 @@ public class TestServiceBus : BaseTest
             hostBuilder => hostBuilder.AddAzureServiceBusListener(connectionString: connectionString, entityPath: $"{topic}/Subscriptions/{subscription}"
                 , serviceBusProcessorOptions: new ServiceBusProcessorOptions
                     {
-                        MaxConcurrentCalls = 10,
+                        MaxConcurrentCalls = 4,
                     }
                 , onError: args =>
                 {

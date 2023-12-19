@@ -7,17 +7,16 @@ namespace MinimalQueues.RabbitMQ;
 
 internal sealed class RabbitMQConnection : IQueueConnection, IRabbitMQConnectionConfiguration, IDisposable
 {
-    #pragma warning disable CS8618
-    private Func<IMessage, CancellationToken, Task> _processMessageAsync;
-    #pragma warning restore CS8618
+    public Func<IMessage, CancellationToken, Task> ProcessMessageDelegate { private get; set; }
     private IConnection? _connection;
     private IModel? _channel;
     public string? QueueName { get; set; }
     public Action<ConnectionFactory>? ConfigureConnectionFactory { get; set; }
-    public Task Start(Func<IMessage, CancellationToken, Task> processMessageDelegate, CancellationToken cancellationToken)
+    
+
+    public Task Start(CancellationToken cancellationToken)
     {
         Validate();
-        _processMessageAsync = processMessageDelegate;
         var connectionFactory = new ConnectionFactory();
         ConfigureConnectionFactory(connectionFactory);
         connectionFactory.DispatchConsumersAsync = true;
@@ -31,7 +30,7 @@ internal sealed class RabbitMQConnection : IQueueConnection, IRabbitMQConnection
         {
             try
             {
-                await _processMessageAsync(new RabbitMQMessage(ea), cancellationToken);
+                await ProcessMessageDelegate(new RabbitMQMessage(ea), cancellationToken);
             }
             catch (Exception)
             {
@@ -43,8 +42,16 @@ internal sealed class RabbitMQConnection : IQueueConnection, IRabbitMQConnection
         consumer.Received += OnConsumerOnReceived;
         
         _channel.BasicConsume(QueueName, false, consumer);
+        
         return Task.CompletedTask;
     }
+
+    public Task Stop()
+    {
+        Dispose();
+        return Task.CompletedTask;
+    }
+
     [MemberNotNull(nameof(QueueName), nameof(ConfigureConnectionFactory))]
     private void Validate()
     {

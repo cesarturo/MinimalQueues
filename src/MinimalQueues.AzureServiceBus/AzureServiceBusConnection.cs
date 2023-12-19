@@ -14,14 +14,12 @@ public sealed class AzureServiceBusConnection : IQueueConnection, IAzureServiceB
     public ServiceBusProcessorOptions? ServiceBusProcessorOptions { get; set; }
     public Func<ProcessErrorEventArgs, Task>? ProcessError { get; set; }
 
-    #pragma warning disable CS8618
-    private Func<IMessage, CancellationToken, Task> _processMessageAsync;
-    #pragma warning restore CS8618
+    public Func<IMessage, CancellationToken, Task> ProcessMessageDelegate { private get; set; }
     private ServiceBusClient?    _serviceBusClient;
     private ServiceBusProcessor? _processor;
-    public async Task Start(Func<IMessage, CancellationToken, Task> processMessageDelegate, CancellationToken cancellationToken)
+
+    public async Task Start(CancellationToken cancellationToken)
     {
-        _processMessageAsync = processMessageDelegate;
         _serviceBusClient = GetClient();
         //AutoComplete must always be true:
         if (ServiceBusProcessorOptions is not null) ServiceBusProcessorOptions.AutoCompleteMessages = true;
@@ -32,41 +30,46 @@ public sealed class AzureServiceBusConnection : IQueueConnection, IAzureServiceB
     }
     private ServiceBusClient GetClient()
     {
+        if (_serviceBusClient is not null)
+            return _serviceBusClient;
+
         if (ConnectionString is not null)
         {
             EntityPath ??= ServiceBusConnectionStringProperties.Parse(ConnectionString).EntityPath;
             return new ServiceBusClient(ConnectionString, ServiceBusClientOptions);
         }
-        if(   Namespace     is not null
-              && EntityPath    is not null
-              && Credential    is not null)
+
+        if (   Namespace     is not null
+            && EntityPath    is not null
+            && Credential    is not null)
             return new ServiceBusClient(Namespace, Credential, ServiceBusClientOptions);
+
         if (Namespace is not null)
             return new ServiceBusClient(Namespace);
+
         throw new Exception("Missing Azure Connection Parameters");
     }
 
     private Task Processor_ProcessMessageAsync(ProcessMessageEventArgs arg)
     {
-        return _processMessageAsync(new AzureMessage(arg.Message), arg.CancellationToken);
+        return ProcessMessageDelegate!(new AzureMessage(arg.Message), arg.CancellationToken);
     }
 
     public async Task Stop()
     {
         if (_processor != null)
         {
-            await _processor.CloseAsync();
+            await _processor.DisposeAsync();
             _processor = null;
-        }
-        if (_serviceBusClient != null)
-        {
-            await _serviceBusClient.DisposeAsync();
-            _serviceBusClient = null;
         }
     }
     public async ValueTask DisposeAsync()
     {
-        await Stop();
+        if (_processor != null) 
+            await _processor.DisposeAsync();
+
+        if (_serviceBusClient != null)
+            await _serviceBusClient.DisposeAsync();
     }
 }
 
