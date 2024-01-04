@@ -3,12 +3,6 @@ name: Test
 on:
   workflow_dispatch:  
     secrets:
-      SERVICEBUSCONNECTIONSTRING:
-        required: true
-      SERVICEBUSTOPIC:
-        required: true
-      SERVICEBUSSUBSCRIPTION:
-        required: true
       AZURE_CLIENT_ID:
         required: true
       AZURE_TENANT_ID:
@@ -52,9 +46,8 @@ jobs:
         working-directory: ./src/tests/MinimalQueues.Tests/Tests
         env:
           ServiceBusNamespace: ${{vars.SERVICEBUSNAMESPACE}}
-          ServiceBusConnectionString: ${{secrets.SERVICEBUSCONNECTIONSTRING}}
-          ServiceBusTopic: ${{secrets.SERVICEBUSTOPIC}}
-          ServiceBusSubscription: ${{secrets.SERVICEBUSSUBSCRIPTION}}
+          ServiceBusTopic: ${{vars.SERVICEBUSTOPIC}}
+          ServiceBusSubscription: ${{vars.SERVICEBUSSUBSCRIPTION}}
 
 
 #https://github.com/aws-actions/configure-aws-credentials
