@@ -1,4 +1,6 @@
 ﻿using System.Text.Json;
+using Azure;
+using Azure.Identity;
 using Azure.Messaging.ServiceBus;
 
 public class ServiceBusMessageSender : IMessageSender
@@ -8,11 +10,11 @@ public class ServiceBusMessageSender : IMessageSender
     private readonly ServiceBusClient _client;
     private readonly ServiceBusSender _sender;
     private int i;
-    public ServiceBusMessageSender(string connectionString, string topic, string subscription)
+    public ServiceBusMessageSender(string serviceBusNamespace, string topic, string subscription)
     {
         _topic = topic;
         _subscription = subscription;
-        _client = new ServiceBusClient(connectionString);
+        _client = new ServiceBusClient(serviceBusNamespace, new DefaultAzureCredential());
         _sender = _client.CreateSender(topic);
     }
 

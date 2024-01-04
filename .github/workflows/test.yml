@@ -9,6 +9,14 @@ on:
         required: true
       SERVICEBUSSUBSCRIPTION:
         required: true
+      AZURE_CLIENT_ID:
+        required: true
+      AZURE_TENANT_ID:
+        required: true
+      AZURE_SUBSCRIPTION_ID:
+        required: true
+  tags:
+    - test
 
 jobs:
   build:
@@ -33,11 +41,19 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::025381531841:role/cztest-mq-role
           aws-region: us-east-2
+
+      - name: 'Az CLI login'
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       
       - name: Run Tests
         run: dotnet test
         working-directory: ./src/tests/MinimalQueues.Tests/Tests
         env:
+          ServiceBusNamespace: ${{vars.SERVICEBUSNAMESPACE}}
           ServiceBusConnectionString: ${{secrets.SERVICEBUSCONNECTIONSTRING}}
           ServiceBusTopic: ${{secrets.SERVICEBUSTOPIC}}
           ServiceBusSubscription: ${{secrets.SERVICEBUSSUBSCRIPTION}}
@@ -45,3 +61,5 @@ jobs:
 
 #https://github.com/aws-actions/configure-aws-credentials
 #https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
+
+#https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-portal%2Clinux

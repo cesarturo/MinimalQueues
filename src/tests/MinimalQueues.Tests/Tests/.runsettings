@@ -11,6 +11,7 @@
       <ServiceBusConnectionString>Endpoint=sb://test-minimal-queues.servicebus.windows.net/;SharedAccessKeyName=unittest;SharedAccessKey=foXPk0kxus3w4XXJmAr809yPPqVI8fdEO+ASbMEk99A=;</ServiceBusConnectionString>
       <ServiceBusTopic>test-topic</ServiceBusTopic>
       <ServiceBusSubscription>test-subscription</ServiceBusSubscription>
+      <ServiceBusNamespace>test-minimal-queues.servicebus.windows.net</ServiceBusNamespace>
     </EnvironmentVariables>
   </RunConfiguration>
 </RunSettings>

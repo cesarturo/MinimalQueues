@@ -13,12 +13,12 @@ public class TestServiceBus : BaseTest
 
     private static IEnumerable<TestFixtureParameters> GetListenerConfigurations()
     {
-        var connectionString = TestSettings.Get("ServiceBusConnectionString");
+        var serviceBusNamespace = TestSettings.Get("ServiceBusNamespace");
         var topic = TestSettings.Get("ServiceBusTopic");
         var subscription = TestSettings.Get("ServiceBusSubscription");
 
-        yield return new TestFixtureParameters(new ServiceBusMessageSender(connectionString, topic, subscription), new MessageReceiver(
-            hostbuilder => hostbuilder.AddAzureServiceBusListener(connectionString: connectionString, entityPath: $"{topic}/Subscriptions/{subscription}"
+        yield return new TestFixtureParameters(new ServiceBusMessageSender(serviceBusNamespace, topic, subscription), new MessageReceiver(
+            hostbuilder => hostbuilder.AddAzureServiceBusListener(@namespace: serviceBusNamespace, entityPath: $"{topic}/Subscriptions/{subscription}"
                 , serviceBusProcessorOptions: new ServiceBusProcessorOptions
                 {
                     MaxConcurrentCalls = 4,
@@ -37,8 +37,8 @@ public class TestServiceBus : BaseTest
             TestName = "With Prefetch"
         };
 
-        yield return new TestFixtureParameters(new ServiceBusMessageSender(connectionString, topic, subscription), new MessageReceiver(
-            hostBuilder => hostBuilder.AddAzureServiceBusListener(connectionString: connectionString, entityPath: $"{topic}/Subscriptions/{subscription}"
+        yield return new TestFixtureParameters(new ServiceBusMessageSender(serviceBusNamespace, topic, subscription), new MessageReceiver(
+            hostBuilder => hostBuilder.AddAzureServiceBusListener(@namespace: serviceBusNamespace, entityPath: $"{topic}/Subscriptions/{subscription}"
                 , serviceBusProcessorOptions: new ServiceBusProcessorOptions
                     {
                         MaxConcurrentCalls = 4,
