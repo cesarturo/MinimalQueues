@@ -1,11 +1,7 @@
 name: Test
 
 on:
-  workflow_dispatch:
-    inputs:
-      project:
-        type: choice
-        description: Project to publish
+  workflow_dispatch:  
     secrets:
       SERVICEBUSCONNECTIONSTRING:
         required: true
