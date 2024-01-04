@@ -15,8 +15,6 @@ on:
         required: true
       AZURE_SUBSCRIPTION_ID:
         required: true
-    tags:
-      - test
 
 jobs:
   build:
