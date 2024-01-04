@@ -1,0 +1,59 @@
+name: Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      project:
+        type: choice
+        description: Project to publish
+    secrets:
+      SERVICEBUSCONNECTIONSTRING:
+        required: true
+      SERVICEBUSTOPIC:
+        required: true
+      SERVICEBUSSUBSCRIPTION:
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Check build
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Install dependencies
+        run: dotnet restore
+        working-directory: ./src
+
+      - name: Build solution
+        run: dotnet build --no-restore
+        working-directory: ./src
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::025381531841:role/cztest-mq-role
+          aws-region: us-east-2
+      
+      - name: Run Tests
+        run: dotnet test
+        working-directory: ./src/tests/MinimalQueues.Tests/Tests
+        env:
+          ServiceBusConnectionString: ${{secrets.SERVICEBUSCONNECTIONSTRING}}
+          ServiceBusTopic: ${{secrets.SERVICEBUSTOPIC}}
+          ServiceBusSubscription: ${{secrets.SERVICEBUSSUBSCRIPTION}}
+
+
+#https://github.com/aws-actions/configure-aws-credentials
+#https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services
