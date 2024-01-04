@@ -8,9 +8,9 @@
   <RunConfiguration>
     <EnvironmentVariables>
       <QUEUE_URL>https://sqs.us-east-2.amazonaws.com/025381531841/cztestqueue1</QUEUE_URL>
-      <ServiceBusConnectionString>Endpoint=sb://test-minimal-queues.servicebus.windows.net/;SharedAccessKeyName=unittest;SharedAccessKey=foXPk0kxus3w4XXJmAr809yPPqVI8fdEO+ASbMEk99A=;</ServiceBusConnectionString>
+      <ServiceBusNamespace>test-minimal-queues.servicebus.windows.net</ServiceBusNamespace>
       <ServiceBusTopic>test-topic</ServiceBusTopic>
-      <ServiceBusSubscription>test-subscription</ServiceBusSubscription>
+      <ServiceBusSubscription>test-subscription</ServiceBusSubscription>      
     </EnvironmentVariables>
   </RunConfiguration>
 </RunSettings>
