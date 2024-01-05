@@ -33,15 +33,18 @@ public class ServiceBusMessageSender : IMessageSender
         }while (batch.Count > 0);
     }
 
-    public async Task SendMessagesAsync(int count, TimeSpan executionTimeHeader)
+    public async Task SendMessagesAsync(int count, TimeSpan? executionTimeHeader)
     {
         var batches = Enumerable.Range(0, count).GroupBy(i => i % 10, i => GenerateMessage());
 
         foreach (var batch in batches)
         {
-            var batchToSend = batch.Select(message => new ServiceBusMessage(JsonSerializer.Serialize(message))
+            var batchToSend = batch.Select(message =>
             {
-                ApplicationProperties = { ["execution-time"] = executionTimeHeader.ToString() }
+                var busMessage = new ServiceBusMessage(JsonSerializer.Serialize(message));
+                if (executionTimeHeader.HasValue) 
+                    busMessage.ApplicationProperties["execution-time"] = executionTimeHeader.ToString();
+                return busMessage;
             }).ToList();
             await _sender.SendMessagesAsync(batchToSend);
             SentMessages.AddRange(batch);

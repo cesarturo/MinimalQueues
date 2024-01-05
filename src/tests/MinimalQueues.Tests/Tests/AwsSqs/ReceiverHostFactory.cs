@@ -17,9 +17,11 @@ public static class ReceiverHostFactory
         var queueApp = configureListener(hostBuilder)
             .UseDeserializedMessageHandler();
 
-        queueApp.Use(async (string message, ConcurrentBag<string> receivedMessages, [Prop("execution-time")] string executionTime) =>
+        queueApp.Use(async (string message, ConcurrentBag<string> receivedMessages, [Prop("execution-time")] string? executionTime) =>
         {
-            await Task.Delay(TimeSpan.Parse(executionTime));
+            if (executionTime is not null)
+                await Task.Delay(TimeSpan.Parse(executionTime));
+
             receivedMessages.Add(message);
         });
 

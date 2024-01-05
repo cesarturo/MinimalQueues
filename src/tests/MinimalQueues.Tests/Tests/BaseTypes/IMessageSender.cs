@@ -2,5 +2,5 @@
 {
     List<string> SentMessages { get; }
     Task PurgeQueueAsync();
-    Task SendMessagesAsync(int count, TimeSpan executionTimeHeader);
+    Task SendMessagesAsync(int count, TimeSpan? executionTimeHeader = null);
 }

@@ -21,11 +21,15 @@ public class SqsMessageSender : IMessageSender
         await Task.Delay(400);//Aws docs recommend to wait for 60 secs, I don't want to (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_PurgeQueue.html)
     }
 
-    public async Task SendMessagesAsync(int count, TimeSpan executionTimeHeader)
+    public async Task SendMessagesAsync(int count, TimeSpan? executionTimeHeader)
     {
         var batches = Enumerable.Range(0, count).GroupBy(i => i % 10, i => GenerateMessage());
 
-        var headers = new Dictionary<string, string> { ["execution-time"] = executionTimeHeader.ToString() };
+        var headers = new Dictionary<string, string?>();
+        
+        if (executionTimeHeader.HasValue)
+            headers["execution-time"] = executionTimeHeader.ToString();
+
         foreach (var batch in batches)
         {
             var batchToSend = batch.Select(message => JsonSerializer.Serialize(message)).ToArray();
