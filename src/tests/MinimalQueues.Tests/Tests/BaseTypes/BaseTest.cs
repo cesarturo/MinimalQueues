@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using Microsoft.Extensions.Hosting;
+using NUnit.Framework;
 
 [TestFixture]
 [FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
@@ -6,13 +7,14 @@
 public abstract class BaseTest
 {
     private readonly IMessageSender _sender;
-    private readonly MessageReceiver _receiver;
+    private readonly IHost _host;
+    
 
-    protected BaseTest(IMessageSender sender, MessageReceiver receiver)
+    protected BaseTest(IMessageSender sender, Func<IHost> createReceiverHostDelegate)
     {
         _sender = sender;
 
-        _receiver = receiver;
+        _host = createReceiverHostDelegate();
     }
 
     [SetUp]
@@ -22,12 +24,12 @@ public abstract class BaseTest
         {
             await _sender.PurgeQueueAsync();
 
-            await _receiver.StartAsync();
+            await _host.StartAsync();
         }
         catch (Exception exception)
         {//Disposing here because Teardown is only called if Setup() is successful (see NUnit docs)
             _sender?.Dispose();
-            _receiver?.Dispose();
+            _host?.Dispose();
         }
     }
 
@@ -36,7 +38,7 @@ public abstract class BaseTest
     {
         _sender.Dispose();
 
-        _receiver.Dispose();
+        _host.Dispose();
     }
 
     [Test]
@@ -47,8 +49,8 @@ public abstract class BaseTest
         await _sender.SendMessagesAsync(100, TimeSpan.FromMilliseconds(200));
 
         await Task.Delay(TimeSpan.FromSeconds(10));
-        Assert.That(() => _receiver.ProcessedMessages, Has.Count.EqualTo(_sender.SentMessages.Count).After(60).Seconds.PollEvery(3).Seconds);
-        Assert.That(() => _receiver.ProcessedMessages, Is.EquivalentTo(_sender.SentMessages).After(60).Seconds.PollEvery(3).Seconds);
+        Assert.That(() => _host.GetProcessedMessages(), Has.Count.EqualTo(_sender.SentMessages.Count).After(60).Seconds.PollEvery(3).Seconds);
+        Assert.That(() => _host.GetProcessedMessages(), Is.EquivalentTo(_sender.SentMessages).After(60).Seconds.PollEvery(3).Seconds);
     }
 
 }

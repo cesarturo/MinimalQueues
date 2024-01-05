@@ -1,0 +1,32 @@
+﻿using System.Collections.Concurrent;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using MinimalQueues;
+using MinimalQueues.Core;
+using MinimalQueues.Core.Options;
+
+public static class ReceiverHostFactory
+{
+    public static IHost Create(Func<IHostBuilder, IOptionsBuilder<QueueProcessorOptions>> configureListener)
+    {
+        ConcurrentBag<string> processedMessages = new();
+
+        var hostBuilder = Host.CreateDefaultBuilder()
+            .ConfigureServices(services => services.AddSingleton(processedMessages));
+        
+        var queueApp = configureListener(hostBuilder)
+            .UseDeserializedMessageHandler();
+
+        queueApp.Use(async (string message, ConcurrentBag<string> receivedMessages, [Prop("execution-time")] string executionTime) =>
+        {
+            await Task.Delay(TimeSpan.Parse(executionTime));
+            receivedMessages.Add(message);
+        });
+
+        return hostBuilder.Build();
+    }
+
+    public static IReadOnlyCollection<string> GetProcessedMessages(this IHost host)
+        => host.Services.GetRequiredService<ConcurrentBag<string>>();
+
+}

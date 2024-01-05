@@ -1,6 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Text.Json;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using MinimalQueues.AwsSqs;
 using MinimalQueues.Core;
 using MinimalQueues.Core.Options;
@@ -12,8 +10,8 @@ using NUnit.Framework.Internal;
 public class TestAwsSqs : BaseTest
 {
     
-    public TestAwsSqs(IMessageSender sender, MessageReceiver receiver) 
-        : base(sender, receiver)
+    public TestAwsSqs(IMessageSender sender, Func<IHost> createReceiverHostDelegate) 
+        : base(sender, createReceiverHostDelegate)
     {
 
     }
@@ -24,27 +22,40 @@ public class TestAwsSqs : BaseTest
         //It is possible to use TestParameters instead of Environment variables like this: TestContext.Parameters["ParameterName"]
         //Test parameters can be configured in the .runsettings file and in the dotnet test command (https://github.com/dotnet/dotnet/blob/3a29b786732fe6f22627567b62692855055189ea/src/vstest/docs/RunSettingsArguments.md)
 
-        yield return GetFixtureParameters("With Prefetch (prefecth: 20, concurrency: 4, visibilityTimeout: 5, renewVisibilityTime: 4)"
-            , queueUrl
-            , hostBuilder => hostBuilder.AddAwsSqsListener(queueUrl: queueUrl
-                                                         , prefetchCount: 20
-                                                         , visibilityTimeout: 5
-                                                         , renewVisibilityTime: 4
-                                                         , maxConcurrency: 4));
+        yield return GetFixtureParameters(testName: "With Prefetch (prefecth: 20, concurrency: 4, visibilityTimeout: 5, renewVisibilityTime: 4)"
+                                        , queueUrl: queueUrl
+                                        , maxConcurrency: 4
+                                        , prefetchCount: 20
+                                        , visibilityTimeout: 5
+                                        , renewVisibilityTime: 4);
 
-        yield return GetFixtureParameters("Without Prefetch (concurrency: 4, visibilityTimeout: 5, renewVisibilityTime: 4)"
-            , queueUrl
-            , hostBuilder => hostBuilder.AddAwsSqsListener(queueUrl: queueUrl
-                                                         , visibilityTimeout: 5
-                                                         , renewVisibilityTime: 4
-                                                         , maxConcurrency: 4));
+        yield return GetFixtureParameters(testName: "Without Prefetch (concurrency: 4, visibilityTimeout: 5, renewVisibilityTime: 4)"
+                                        , queueUrl: queueUrl
+                                        , maxConcurrency: 4
+                                        , prefetchCount: 0
+                                        , visibilityTimeout: 5
+                                        , renewVisibilityTime: 4);
     }
 
-    private static TestFixtureParameters GetFixtureParameters(string testName, string queueUrl, Func<IHostBuilder, IOptionsBuilder<QueueProcessorOptions>> configureListener)
+    private static TestFixtureParameters GetFixtureParameters(string testName, string queueUrl, int maxConcurrency, int prefetchCount, int visibilityTimeout, int renewVisibilityTime)
     {
-        return new TestFixtureParameters(new SqsMessageSender(queueUrl), new MessageReceiver(configureListener))
-        {
-            TestName = testName
-        };
+        var messageSender = new SqsMessageSender(queueUrl);
+
+        var createReceiverHostDelegate = () => CreateReceiverHost(queueUrl, maxConcurrency, prefetchCount, visibilityTimeout, renewVisibilityTime);
+
+        return new TestFixtureParameters(messageSender, createReceiverHostDelegate) { TestName = testName };
+    }
+
+    private static IHost CreateReceiverHost(string queueUrl, int maxConcurrency, int prefetchCount, int visibilityTimeout, int renewVisibilityTime)
+    {
+        return ReceiverHostFactory.Create(ConfigureHostToListenSqs);
+
+
+        IOptionsBuilder<QueueProcessorOptions> ConfigureHostToListenSqs(IHostBuilder hostBuilder) => 
+            hostBuilder.AddAwsSqsListener(queueUrl:            queueUrl
+                                        , maxConcurrency:      maxConcurrency
+                                        , prefetchCount:       prefetchCount
+                                        , visibilityTimeout:   visibilityTimeout
+                                        , renewVisibilityTime: renewVisibilityTime);
     }
 }
