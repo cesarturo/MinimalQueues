@@ -117,7 +117,7 @@ internal class PrefetchMessageReceiver : IMessageReceiver
 
     public async Task<SqsMessage?> ReceiveMessage(CancellationToken cancellation)
     {
-        var messageContext = await _channelReader.ReadAsync();
+        var messageContext = await _channelReader.ReadAsync(cancellation);
         _autoResetEvent.Set();
         return messageContext;
     }
