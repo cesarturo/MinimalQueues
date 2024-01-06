@@ -5,13 +5,14 @@ using MinimalQueues.Core.Options;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 
+
 [TestFixture]
 [TestFixtureSource(nameof(GetListenerConfigurations))]
 public class TestAwsSqs : BaseTest
 {
     
-    public TestAwsSqs(IMessageSender sender, Func<IHost> createReceiverHostDelegate) 
-        : base(sender, createReceiverHostDelegate)
+    public TestAwsSqs(Func<IMessageSender> createMessageSenderDelegate, Func<IHost> createReceiverHostDelegate) 
+        : base(createMessageSenderDelegate, createReceiverHostDelegate)
     {
 
     }
@@ -39,11 +40,11 @@ public class TestAwsSqs : BaseTest
 
     private static TestFixtureParameters GetFixtureParameters(string testName, string queueUrl, int maxConcurrency, int prefetchCount, int visibilityTimeout, int renewVisibilityTime)
     {
-        var messageSender = new SqsMessageSender(queueUrl);
+        var createMessageSenderDelegate = () => new SqsMessageSender(queueUrl);
 
         var createReceiverHostDelegate = () => CreateReceiverHost(queueUrl, maxConcurrency, prefetchCount, visibilityTimeout, renewVisibilityTime);
 
-        return new TestFixtureParameters(messageSender, createReceiverHostDelegate) { TestName = testName };
+        return new TestFixtureParameters(createMessageSenderDelegate, createReceiverHostDelegate) { TestName = testName };
     }
 
     private static IHost CreateReceiverHost(string queueUrl, int maxConcurrency, int prefetchCount, int visibilityTimeout, int renewVisibilityTime)

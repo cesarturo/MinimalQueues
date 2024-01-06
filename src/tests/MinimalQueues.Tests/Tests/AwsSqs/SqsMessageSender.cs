@@ -1,5 +1,7 @@
 ﻿using System.Text.Json;
 using MinimalSqsClient;
+using Polly;
+using Polly.Retry;
 
 public class SqsMessageSender : IMessageSender
 {
@@ -15,10 +17,26 @@ public class SqsMessageSender : IMessageSender
         });
     }
 
-    public async Task PurgeQueueAsync()
+    public async Task<bool> PurgeQueueAsync()
     {
-        await _sqsClient.PurgeQueueAsync();
-        await Task.Delay(400);//Aws docs recommend to wait for 60 secs, I don't want to (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_PurgeQueue.html)
+        var retryPipeline = CreateRetryPipeline();
+
+        var success = await retryPipeline.ExecuteAsync(async _ => await _sqsClient.PurgeQueueAsync());
+
+        await Task.Delay(2000);//Aws docs recommend to wait for 60 secs, I don't want to (https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_PurgeQueue.html)
+
+        return success;
+
+        static ResiliencePipeline<bool> CreateRetryPipeline()
+        {
+            return new ResiliencePipelineBuilder<bool>().AddRetry(new RetryStrategyOptions<bool>
+            {
+                ShouldHandle = new PredicateBuilder<bool>().HandleResult(false).Handle<Exception>(),
+                MaxRetryAttempts = 5,
+                BackoffType = DelayBackoffType.Linear,
+                Delay = TimeSpan.FromSeconds(3)
+            }).Build();
+        }
     }
 
     public async Task SendMessagesAsync(int count, TimeSpan? executionTimeHeader)

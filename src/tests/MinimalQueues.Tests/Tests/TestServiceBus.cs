@@ -10,7 +10,8 @@ using NUnit.Framework.Internal;
 [TestFixtureSource(nameof(GetListenerConfigurations))]
 public class TestServiceBus : BaseTest
 {
-    public TestServiceBus(IMessageSender sender, Func<IHost> createReceiverHostDelegate) : base(sender, createReceiverHostDelegate)
+    public TestServiceBus(Func<IMessageSender> createMessageSenderDelegate, Func<IHost> createReceiverHostDelegate)
+        : base(createMessageSenderDelegate, createReceiverHostDelegate)
     {
 
     }
@@ -34,11 +35,11 @@ public class TestServiceBus : BaseTest
         var topic               = TestSettings.Get("ServiceBusTopic");
         var subscription        = TestSettings.Get("ServiceBusSubscription");
 
-        var messageSender = new ServiceBusMessageSender(serviceBusNamespace, topic, subscription);
+        var createMessageSenderDelegate = () => new ServiceBusMessageSender(serviceBusNamespace, topic, subscription);
 
         var createReceiverHostDelegate = () => CreateReceiverHost(maxConcurrentCalls, prefetchCount, topic, subscription, serviceBusNamespace, transportType);
 
-        return new TestFixtureParameters(messageSender, createReceiverHostDelegate) { TestName = testName };
+        return new TestFixtureParameters(createMessageSenderDelegate, createReceiverHostDelegate) { TestName = testName };
     }
 
     private static IHost CreateReceiverHost(int maxConcurrentCalls, int prefetchCount, string topic, string subscription, string serviceBusNamespace, ServiceBusTransportType transportType)

@@ -20,7 +20,7 @@ public class ServiceBusMessageSender : IMessageSender
 
     public List<string> SentMessages { get; } = new();
 
-    public async Task PurgeQueueAsync()
+    public async Task<bool> PurgeQueueAsync()
     {
         await using var receiver = _client.CreateReceiver(_topic, _subscription, new ServiceBusReceiverOptions
         {
@@ -31,6 +31,8 @@ public class ServiceBusMessageSender : IMessageSender
         {
             batch = await receiver.ReceiveMessagesAsync(100, TimeSpan.FromSeconds(2));
         }while (batch.Count > 0);
+
+        return true;
     }
 
     public async Task SendMessagesAsync(int count, TimeSpan? executionTimeHeader)

@@ -3,36 +3,36 @@ using NUnit.Framework;
 
 [TestFixture]
 [FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
-[Parallelizable(ParallelScope.Fixtures)]
 public abstract class BaseTest
 {
-    private readonly IMessageSender _sender;
+    private readonly IMessageSender _messageSender;
     private readonly Func<IHost> _createReceiverHostDelegate;
     
 
-    protected BaseTest(IMessageSender sender, Func<IHost> createReceiverHostDelegate)
+    protected BaseTest(Func<IMessageSender> createMessageSenderDelegate, Func<IHost> createReceiverHostDelegate)
     {
-        _sender = sender;
+        _messageSender = createMessageSenderDelegate();
         _createReceiverHostDelegate = createReceiverHostDelegate;
     }
 
     [SetUp]
-    public async Task Setup()
+    public void Setup()
     {
         try
         {
-            await _sender.PurgeQueueAsync();
+            Assume.That(_messageSender.PurgeQueueAsync, Is.True, "Failed to purge the queue.");
         }
-        catch (Exception exception)
+        catch
         {//Disposing here because Teardown is only called if Setup() is successful (see NUnit docs)
-            _sender?.Dispose();
+            _messageSender.Dispose();
+            throw;
         }
     }
 
     [TearDown]
     public void Teardown()
     {
-        _sender.Dispose();
+        _messageSender.Dispose();
     }
 
     [Test]
@@ -40,15 +40,15 @@ public abstract class BaseTest
     {
         using var receiverHost = await StartNewReceiverHost();
 
-        await _sender.SendMessagesAsync(count: 5, TimeSpan.FromSeconds(10));
+        SendMessages(count: 5, TimeSpan.FromSeconds(10));
 
-        await _sender.SendMessagesAsync(count: 100, TimeSpan.FromMilliseconds(200));
+        SendMessages(count: 100, TimeSpan.FromMilliseconds(200));
 
-        await Task.Delay(TimeSpan.FromSeconds(10));
+        await Wait(10);
 
-        Assert.That(() => receiverHost.GetProcessedMessages(), Has.Count.EqualTo(_sender.SentMessages.Count).After(60).Seconds.PollEvery(3).Seconds);
+        Assert.That(() => receiverHost.GetProcessedMessages(), Has.Count.EqualTo(_messageSender.SentMessages.Count).After(60).Seconds.PollEvery(3).Seconds);
 
-        Assert.That(() => receiverHost.GetProcessedMessages(), Is.EquivalentTo(_sender.SentMessages).After(60).Seconds.PollEvery(3).Seconds);
+        Assert.That(() => receiverHost.GetProcessedMessages(), Is.EquivalentTo(_messageSender.SentMessages).After(60).Seconds.PollEvery(3).Seconds);
     }
 
     [Test]
@@ -56,7 +56,7 @@ public abstract class BaseTest
     {
         using var receiverHost = await StartNewReceiverHost();
 
-        await _sender.SendMessagesAsync(count: 20);
+        SendMessages(count: 20);
 
         await Wait(seconds: 5);
 
@@ -64,14 +64,21 @@ public abstract class BaseTest
 
         var expected = receiverHost.GetProcessedMessages().ToArray();
 
-        await _sender.SendMessagesAsync(count: 5);
+        SendMessages(count: 5);
 
         await Wait(seconds: 5);
 
         Assert.That(() => receiverHost.GetProcessedMessages(), Is.EquivalentTo(expected));
-
-        Task Wait(int seconds) => Task.Delay(TimeSpan.FromSeconds(seconds));
     }
+
+    private void SendMessages(int count, TimeSpan? receiverExecutionTime = null)
+    {
+        Assume.That(
+            async () => await _messageSender.SendMessagesAsync(count, receiverExecutionTime)
+          , Throws.Nothing, "Error sending messages.");
+    }
+
+    private Task Wait(int seconds) => Task.Delay(TimeSpan.FromSeconds(seconds));
 
     private async Task<IHost> StartNewReceiverHost()
     {

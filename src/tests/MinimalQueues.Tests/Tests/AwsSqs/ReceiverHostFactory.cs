@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using MinimalQueues;
 using MinimalQueues.Core;
 using MinimalQueues.Core.Options;
@@ -12,6 +13,7 @@ public static class ReceiverHostFactory
         ConcurrentBag<string> processedMessages = new();
 
         var hostBuilder = Host.CreateDefaultBuilder()
+            .ConfigureLogging(loggingBuilder => loggingBuilder.ClearProviders())
             .ConfigureServices(services => services.AddSingleton(processedMessages));
         
         var queueApp = configureListener(hostBuilder)
