@@ -1,7 +1,9 @@
 ﻿using System.Text.Json;
-using Azure;
 using Azure.Identity;
 using Azure.Messaging.ServiceBus;
+using Tests.Internal;
+
+namespace Tests.Implementations.ServiceBus;
 
 public class ServiceBusMessageSender : IMessageSender
 {
@@ -30,7 +32,7 @@ public class ServiceBusMessageSender : IMessageSender
         do
         {
             batch = await receiver.ReceiveMessagesAsync(100, TimeSpan.FromSeconds(2));
-        }while (batch.Count > 0);
+        } while (batch.Count > 0);
 
         return true;
     }
@@ -44,7 +46,7 @@ public class ServiceBusMessageSender : IMessageSender
             var batchToSend = batch.Select(message =>
             {
                 var busMessage = new ServiceBusMessage(JsonSerializer.Serialize(message));
-                if (executionTimeHeader.HasValue) 
+                if (executionTimeHeader.HasValue)
                     busMessage.ApplicationProperties["execution-time"] = executionTimeHeader.ToString();
                 return busMessage;
             }).ToList();

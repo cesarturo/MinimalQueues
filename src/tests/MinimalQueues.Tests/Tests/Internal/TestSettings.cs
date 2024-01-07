@@ -1,4 +1,6 @@
-﻿public static class TestSettings
+﻿namespace Tests.Internal;
+
+public static class TestSettings
 {
     //NOTE:
     //I am using Environment variables

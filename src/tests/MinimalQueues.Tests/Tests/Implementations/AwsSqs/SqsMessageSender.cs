@@ -2,6 +2,9 @@
 using MinimalSqsClient;
 using Polly;
 using Polly.Retry;
+using Tests.Internal;
+
+namespace Tests.Implementations.AwsSqs;
 
 public class SqsMessageSender : IMessageSender
 {
@@ -44,7 +47,7 @@ public class SqsMessageSender : IMessageSender
         var batches = Enumerable.Range(0, count).GroupBy(i => i % 10, i => GenerateMessage());
 
         var headers = new Dictionary<string, string?>();
-        
+
         if (executionTimeHeader.HasValue)
             headers["execution-time"] = executionTimeHeader.ToString();
 

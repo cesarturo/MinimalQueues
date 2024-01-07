@@ -1,5 +1,8 @@
 ﻿using Microsoft.Extensions.Hosting;
 using NUnit.Framework;
+using Tests.Internal;
+
+namespace Tests;
 
 [TestFixture]
 [FixtureLifeCycle(LifeCycle.InstancePerTestCase)]
@@ -40,9 +43,9 @@ public abstract class BaseTest
     {
         using var receiverHost = await StartNewReceiverHost();
 
-        SendMessages(count: 5, TimeSpan.FromSeconds(10));
+        SendMessages(count: 5, receiverExecutionTime: TimeSpan.FromSeconds(10));
 
-        SendMessages(count: 100, TimeSpan.FromMilliseconds(200));
+        SendMessages(count: 100, receiverExecutionTime: TimeSpan.FromMilliseconds(200));
 
         await Wait(10);
 
@@ -75,7 +78,7 @@ public abstract class BaseTest
     {
         Assume.That(
             async () => await _messageSender.SendMessagesAsync(count, receiverExecutionTime)
-          , Throws.Nothing, "Error sending messages.");
+            , Throws.Nothing, "Error sending messages.");
     }
 
     private Task Wait(int seconds) => Task.Delay(TimeSpan.FromSeconds(seconds));

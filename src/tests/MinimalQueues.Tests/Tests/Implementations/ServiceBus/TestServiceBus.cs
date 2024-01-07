@@ -5,6 +5,9 @@ using MinimalQueues.Core;
 using MinimalQueues.Core.Options;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
+using Tests.Internal;
+
+namespace Tests.Implementations.ServiceBus;
 
 [TestFixture]
 [TestFixtureSource(nameof(GetListenerConfigurations))]
@@ -19,21 +22,21 @@ public class TestServiceBus : BaseTest
     private static IEnumerable<TestFixtureParameters> GetListenerConfigurations()
     {
         yield return GetFixtureParameters(testName: "With Prefetch"
-                                        , maxConcurrentCalls: 4
-                                        , prefetchCount: 20
-                                        , transportType: ServiceBusTransportType.AmqpTcp);
+            , maxConcurrentCalls: 4
+            , prefetchCount: 20
+            , transportType: ServiceBusTransportType.AmqpTcp);
 
         yield return GetFixtureParameters(testName: "Without Prefetch"
-                                        , maxConcurrentCalls: 4
-                                        , prefetchCount: 0
-                                        , transportType: ServiceBusTransportType.AmqpTcp);
+            , maxConcurrentCalls: 4
+            , prefetchCount: 0
+            , transportType: ServiceBusTransportType.AmqpTcp);
     }
 
     private static TestFixtureParameters GetFixtureParameters(string testName, int maxConcurrentCalls, int prefetchCount, ServiceBusTransportType transportType)
     {
         var serviceBusNamespace = TestSettings.Get("ServiceBusNamespace");
-        var topic               = TestSettings.Get("ServiceBusTopic");
-        var subscription        = TestSettings.Get("ServiceBusSubscription");
+        var topic = TestSettings.Get("ServiceBusTopic");
+        var subscription = TestSettings.Get("ServiceBusSubscription");
 
         var createMessageSenderDelegate = () => new ServiceBusMessageSender(serviceBusNamespace, topic, subscription);
 
@@ -49,15 +52,15 @@ public class TestServiceBus : BaseTest
 
         IOptionsBuilder<QueueProcessorOptions> ConfigureHostToListenServiceBus(IHostBuilder hostBuilder) =>
             hostBuilder.AddAzureServiceBusListener(
-                  @namespace:                 serviceBusNamespace
-                , entityPath:                 $"{topic}/Subscriptions/{subscription}"
+                @namespace: serviceBusNamespace
+                , entityPath: $"{topic}/Subscriptions/{subscription}"
                 , serviceBusProcessorOptions: GetServiceBusProcessorOptions(maxConcurrentCalls, prefetchCount)
-                , onError:                    OnError
-                , serviceBusClientOptions:    new ServiceBusClientOptions { TransportType = transportType });
+                , onError: OnError
+                , serviceBusClientOptions: new ServiceBusClientOptions { TransportType = transportType });
 
         static ServiceBusProcessorOptions GetServiceBusProcessorOptions(int maxConcurrentCalls, int prefetchCount)
         {
-            return  new ServiceBusProcessorOptions
+            return new ServiceBusProcessorOptions
             {
                 MaxConcurrentCalls = maxConcurrentCalls,
                 PrefetchCount = prefetchCount

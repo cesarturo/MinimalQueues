@@ -6,6 +6,8 @@ using MinimalQueues;
 using MinimalQueues.Core;
 using MinimalQueues.Core.Options;
 
+namespace Tests.Internal;
+
 public static class ReceiverHostFactory
 {
     public static IHost Create(Func<IHostBuilder, IOptionsBuilder<QueueProcessorOptions>> configureListener)

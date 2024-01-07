@@ -1,4 +1,6 @@
-﻿public interface IMessageSender : IDisposable
+﻿namespace Tests.Internal;
+
+public interface IMessageSender : IDisposable
 {
     List<string> SentMessages { get; }
     Task<bool> PurgeQueueAsync();
