@@ -24,7 +24,7 @@ internal sealed class AwsSqsConnection : IQueueConnection, IDisposable
     }
 
 #pragma warning restore CS8618
-    public Func<IMessage, CancellationToken, Task> ProcessMessageDelegate { private get; set; }
+    public Func<IMessage, CancellationToken, Task>? ProcessMessageDelegate { private get; set; }
 
     public Task Start(CancellationToken cancellationToken)
     {
@@ -58,7 +58,7 @@ internal sealed class AwsSqsConnection : IQueueConnection, IDisposable
 
     internal Task ProcessMessageAsync(SqsMessage message)
     {
-        return ProcessMessageDelegate(message, Cancellation);
+        return ProcessMessageDelegate!(message, Cancellation);
     }
     internal Task DeleteMessageAsync(SqsMessage message)
     {

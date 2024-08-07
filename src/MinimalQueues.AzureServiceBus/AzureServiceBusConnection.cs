@@ -14,7 +14,7 @@ public sealed class AzureServiceBusConnection : IQueueConnection, IAzureServiceB
     public ServiceBusProcessorOptions? ServiceBusProcessorOptions { get; set; }
     public Func<ProcessErrorEventArgs, Task>? ProcessError { get; set; }
 
-    public Func<IMessage, CancellationToken, Task> ProcessMessageDelegate { private get; set; }
+    public Func<IMessage, CancellationToken, Task>? ProcessMessageDelegate { private get; set; }
     private ServiceBusClient?    _serviceBusClient;
     private ServiceBusProcessor? _processor;
 
