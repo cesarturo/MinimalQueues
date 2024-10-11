@@ -33,11 +33,11 @@ public static class AwsLambdaSqsExtensions
     {
         builder.ConfigureServices(services =>
         {
-            services.TryAddSingleton<MessageProcessor>();
+            services.TryAddSingleton<LambdaSqsEventProcessor>();
             services.TryAddSingleton<LambdaBootstrapHostedService>();
             services.AddHostedService(sp => sp.GetRequiredService<LambdaBootstrapHostedService>());
         });
-        return builder.Configure((QueueProcessorOptions queueProcessorOptions, TDependency dependency, MessageProcessor messageProcessor) =>
+        return builder.Configure((QueueProcessorOptions queueProcessorOptions, TDependency dependency, LambdaSqsEventProcessor messageProcessor) =>
         {
             var connection = new AwsLambdaSqsConnection();
             configure(connection, dependency);

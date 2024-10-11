@@ -6,23 +6,23 @@ namespace MinimalQueues.AwsLambdaSqs;
 internal sealed class LambdaBootstrapHostedService : IHostedService
 {
     private readonly IHostApplicationLifetime                          _appLifetime;
-    private readonly MessageProcessor                                  _messageProcessor;
+    private readonly LambdaSqsEventProcessor                                  _lambdaSqsEventProcessor;
     private readonly IServiceProvider                                  _serviceProvider;
     private readonly Action<LambdaBootstrapBuilder, IServiceProvider>? _configureBootstraper;
     private Task?                                                      _bootstrapperTask;
     public LambdaBootstrapHostedService(IHostApplicationLifetime appLifetime
-                                      , MessageProcessor messageProcessor
+                                      , LambdaSqsEventProcessor lambdaSqsEventProcessor
                                       , IServiceProvider serviceProvider
                                       , Action<LambdaBootstrapBuilder, IServiceProvider>? configureBootstraper)
     {
         _appLifetime          = appLifetime;
-        _messageProcessor     = messageProcessor;
+        _lambdaSqsEventProcessor     = lambdaSqsEventProcessor;
         _serviceProvider      = serviceProvider;
         _configureBootstraper = configureBootstraper;
     }
     private void StartLambda()
     {
-        var bootstrapBuilder = LambdaBootstrapBuilder.Create(_messageProcessor.FunctionHandler);
+        var bootstrapBuilder = LambdaBootstrapBuilder.Create(_lambdaSqsEventProcessor.FunctionHandler);
         _configureBootstraper?.Invoke(bootstrapBuilder, _serviceProvider);
         _bootstrapperTask = bootstrapBuilder
                             .Build()
