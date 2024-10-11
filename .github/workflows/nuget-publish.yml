@@ -33,7 +33,7 @@ jobs:
           "MinimalQueues.AwsLambaSqs")     echo "CSPROJ_PATH=./src/MinimalQueues.AwsLambdaSqs" >> "$GITHUB_OUTPUT";;
           "MinimalQueues.AwsSqs")          echo "CSPROJ_PATH=./src/MinimalQueues.AwsSqs" >> "$GITHUB_OUTPUT";;
           "MinimalQueues.AzureServiceBus") echo "CSPROJ_PATH=./src/MinimalQueues.AzureServiceBus" >> "$GITHUB_OUTPUT";;
-          "MinimalQueues.RabbitMQ")        echo "CSPROJ_PATH=/src/MinimalQueues.RabbitMQ" >> "$GITHUB_OUTPUT";;
+          "MinimalQueues.RabbitMQ")        echo "CSPROJ_PATH=./src/MinimalQueues.RabbitMQ" >> "$GITHUB_OUTPUT";;
           esac
 
   publish:
