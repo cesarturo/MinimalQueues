@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(Configuration)'=='Release' ">
-    <PackageReference Include="MinimalQueues.Core" Version="1.0.0" />
+    <PackageReference Include="MinimalQueues.Core" Version="1.1.0-rc1" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(Configuration)'=='Debug' ">
