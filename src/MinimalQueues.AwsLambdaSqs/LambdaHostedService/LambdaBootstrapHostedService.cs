@@ -8,22 +8,22 @@ internal sealed class LambdaBootstrapHostedService : IHostedService
     private readonly IHostApplicationLifetime                          _appLifetime;
     private readonly LambdaSqsEventHandler                             _lambdaSqsEventHandler;
     private readonly IServiceProvider                                  _serviceProvider;
-    private readonly Action<LambdaBootstrapBuilder, IServiceProvider>? _configureBootstraper;
+    private readonly Action<LambdaBootstrapBuilder, IServiceProvider>? _configureBootstrapper;
     private Task?                                                      _bootstrapperTask;
     public LambdaBootstrapHostedService(IHostApplicationLifetime appLifetime
                                       , LambdaSqsEventHandler lambdaSqsEventHandler
                                       , IServiceProvider serviceProvider
-                                      , Action<LambdaBootstrapBuilder, IServiceProvider>? configureBootstraper)
+                                      , Action<LambdaBootstrapBuilder, IServiceProvider>? configureBootstrapper)
     {
         _appLifetime               = appLifetime;
         _lambdaSqsEventHandler     = lambdaSqsEventHandler;
         _serviceProvider           = serviceProvider;
-        _configureBootstraper      = configureBootstraper;
+        _configureBootstrapper      = configureBootstrapper;
     }
     private void StartLambda()
     {
         var bootstrapBuilder = LambdaBootstrapBuilder.Create(_lambdaSqsEventHandler.Handle);
-        _configureBootstraper?.Invoke(bootstrapBuilder, _serviceProvider);
+        _configureBootstrapper?.Invoke(bootstrapBuilder, _serviceProvider);
         _bootstrapperTask = bootstrapBuilder
                             .Build()
                             .RunAsync(_appLifetime.ApplicationStopping);
