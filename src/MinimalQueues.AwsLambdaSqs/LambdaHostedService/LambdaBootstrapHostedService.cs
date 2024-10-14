@@ -15,10 +15,10 @@ internal sealed class LambdaBootstrapHostedService : IHostedService
                                       , IServiceProvider serviceProvider
                                       , Action<LambdaBootstrapBuilder, IServiceProvider>? configureBootstrapper)
     {
-        _appLifetime               = appLifetime;
-        _lambdaSqsEventHandler     = lambdaSqsEventHandler;
-        _serviceProvider           = serviceProvider;
-        _configureBootstrapper      = configureBootstrapper;
+        _appLifetime           = appLifetime;
+        _lambdaSqsEventHandler = lambdaSqsEventHandler;
+        _serviceProvider       = serviceProvider;
+        _configureBootstrapper = configureBootstrapper;
     }
     private void StartLambda()
     {
