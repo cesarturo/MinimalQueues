@@ -4,7 +4,7 @@ using Amazon.Lambda.Core;
 
 namespace MinimalQueues.AwsLambdaSqs;
 
-internal sealed class LambdaSqsEventHandler
+public sealed class LambdaSqsEventHandler
 {
     private readonly Dictionary<string, AwsLambdaSqsConnection> NamedConnections = new();
     private AwsLambdaSqsConnection? DefaultConnection;
