@@ -28,11 +28,10 @@ public static class LambdaSqsExtensions
     {
         builder.ConfigureServices(services =>
         {
-            services.TryAddSingleton<LambdaSqsEventProcessor>(_ => new LambdaSqsEventProcessor());
-            services.TryAddSingleton<LambdaSqsEventHandler>(sp => sp.GetRequiredService<LambdaSqsEventProcessor>().FunctionHandler);
+            services.TryAddSingleton<LambdaSqsEventHandler>(_ => new LambdaSqsEventHandler());
         });
 
-        return builder.Configure((QueueProcessorOptions queueProcessorOptions, TDependency dependency, LambdaSqsEventProcessor messageProcessor) =>
+        return builder.Configure((QueueProcessorOptions queueProcessorOptions, TDependency dependency, LambdaSqsEventHandler messageProcessor) =>
         {
             var connection = new AwsLambdaSqsConnection();
             configure(connection, dependency);

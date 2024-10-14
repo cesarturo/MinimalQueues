@@ -4,7 +4,7 @@ using Amazon.Lambda.Core;
 
 namespace MinimalQueues.AwsLambdaSqs;
 
-internal sealed class LambdaSqsEventProcessor
+internal sealed class LambdaSqsEventHandler
 {
     private readonly Dictionary<string, AwsLambdaSqsConnection> NamedConnections = new();
     private AwsLambdaSqsConnection? DefaultConnection;
@@ -23,7 +23,7 @@ internal sealed class LambdaSqsEventProcessor
             throw new Exception($"An AwsLambdaSqsConnection with arn {connection.QueueArn} is already registered.");
         }
     }
-    public async Task<Stream> FunctionHandler(Stream stream, ILambdaContext context)
+    public async Task<Stream> Handle(Stream stream, ILambdaContext context)
     {
         var sqsEvent = JsonSerializer.Deserialize<SQSEvent>(stream, _inputSerializerOptions);
         var messageIdOfErrors = await ProcessMessages(sqsEvent!);
@@ -57,4 +57,10 @@ internal sealed class LambdaSqsEventProcessor
         }
         return null;
     }
+
+    public static implicit operator Func<Stream, ILambdaContext, Task<Stream>>(LambdaSqsEventHandler handler)
+    {
+        return handler.Handle;
+    }
 }
+
